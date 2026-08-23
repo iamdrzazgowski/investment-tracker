@@ -20,7 +20,7 @@ export default function SignupPage() {
                     </Link>
                 </div>
                 <div className='flex flex-1 items-center justify-center'>
-                    <div className='w-full max-w-lg'>
+                    <div className='w-full max-w-sm'>
                         <SignupForm />
                     </div>
                 </div>

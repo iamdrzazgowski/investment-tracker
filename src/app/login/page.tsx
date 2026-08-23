@@ -22,7 +22,7 @@ export default function LoginPage() {
                     </div>
 
                     <div className='flex flex-1 items-center justify-center'>
-                        <div className='w-full max-w-[340px]'>
+                        <div className='w-full max-w-sm'>
                             <LoginForm />
                         </div>
                     </div>
