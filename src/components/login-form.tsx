@@ -50,7 +50,7 @@ export function LoginForm({
                                     type='email'
                                     placeholder='marta@example.com'
                                     required
-                                    className='h-auto rounded-lg border-border bg-background px-[11px] py-[9px] font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
+                                    className='h-auto rounded-lg border-border bg-background px-2.75 py-2.25 font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
                                 />
                             </Field>
 
@@ -74,20 +74,20 @@ export function LoginForm({
                                     id='password'
                                     type='password'
                                     required
-                                    className='h-auto rounded-lg border-border bg-background px-[11px] py-[9px] font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
+                                    className='h-auto rounded-lg border-border bg-background px-2.75 py-2.25 font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
                                 />
                             </Field>
 
                             <Field className='mt-1'>
                                 <Button
                                     type='submit'
-                                    className='h-auto w-full rounded-lg bg-primary px-[14px] py-[10px] text-[13.5px] font-semibold text-primary-foreground shadow-none hover:bg-primary/90'>
+                                    className='h-auto w-full rounded-lg bg-primary px-3.5 py-2.5 text-[13.5px] font-semibold text-primary-foreground shadow-none hover:bg-primary/90'>
                                     Log in
                                 </Button>
                             </Field>
 
                             <Field className='mt-2'>
-                                <FieldDescription className='mt-[18px] text-center text-[12.5px] text-muted-foreground'>
+                                <FieldDescription className='mt-4.5 text-center text-[12.5px] text-muted-foreground'>
                                     Don&apos;t have an account?{' '}
                                     <Link
                                         href='/signup'

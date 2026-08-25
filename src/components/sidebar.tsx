@@ -11,7 +11,7 @@ export function Sidebar() {
     return (
         <aside className='sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-border bg-card p-3.5 md:flex'>
             <div className='flex items-center gap-2.5 px-2.5 pb-4 pt-1'>
-                <span className='flex h-[26px] w-[26px] items-center justify-center rounded-[7px] bg-primary text-[13px] font-bold text-primary-foreground'>
+                <span className='flex h-6.5 w-6.5 items-center justify-center rounded-[7px] bg-primary text-[13px] font-bold text-primary-foreground'>
                     N
                 </span>
                 <span className='text-[14.5px] font-semibold tracking-tight'>
@@ -41,7 +41,7 @@ export function Sidebar() {
                 })}
             </nav>
             <div className='mt-auto flex items-center gap-2.5 border-t border-border p-2.5 pt-3.5'>
-                <span className='flex h-[30px] w-[30px] items-center justify-center rounded-full bg-positive-soft text-[12px] font-bold text-positive'>
+                <span className='flex h-7.5 w-7.5 items-center justify-center rounded-full bg-positive-soft text-[12px] font-bold text-positive'>
                     MK
                 </span>
                 <div>

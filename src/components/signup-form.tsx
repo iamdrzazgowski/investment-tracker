@@ -51,7 +51,7 @@ export function SignupForm({
                                     type='text'
                                     placeholder='John Doe'
                                     required
-                                    className='h-auto rounded-lg border-border bg-background px-[11px] py-[9px] font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
+                                    className='h-auto rounded-lg border-border bg-background px-2.75 py-2.25 font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
                                 />
                             </Field>
 
@@ -68,7 +68,7 @@ export function SignupForm({
                                     type='email'
                                     placeholder='marta@example.com'
                                     required
-                                    className='h-auto rounded-lg border-border bg-background px-[11px] py-[9px] font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
+                                    className='h-auto rounded-lg border-border bg-background px-2.75 py-2.25 font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
                                 />
                             </Field>
 
@@ -84,7 +84,7 @@ export function SignupForm({
                                     name='password'
                                     type='password'
                                     required
-                                    className='h-auto rounded-lg border-border bg-background px-[11px] py-[9px] font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
+                                    className='h-auto rounded-lg border-border bg-background px-2.75 py-2.25 font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
                                 />
 
                                 <p className='mt-1.5 text-[11.5px] text-muted-foreground'>
@@ -104,13 +104,13 @@ export function SignupForm({
                                     name='confirm-password'
                                     type='password'
                                     required
-                                    className='h-auto rounded-lg border-border bg-background px-[11px] py-[9px] font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
+                                    className='h-auto rounded-lg border-border bg-background px-2.75 py-2.25 font-sans text-sm shadow-none focus-visible:border-ring focus-visible:ring-0'
                                 />
                             </Field>
 
                             <Button
                                 type='submit'
-                                className='h-auto w-full rounded-lg bg-primary px-[14px] py-[10px] text-[13.5px] font-semibold text-primary-foreground shadow-none hover:bg-primary/90'>
+                                className='h-auto w-full rounded-lg bg-primary px-3.5 py-2.5 text-[13.5px] font-semibold text-primary-foreground shadow-none hover:bg-primary/90'>
                                 Create account
                             </Button>
 

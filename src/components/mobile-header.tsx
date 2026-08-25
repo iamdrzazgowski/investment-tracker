@@ -33,7 +33,7 @@ export function MobileHeader() {
                 </SheetTrigger>
                 <SheetContent side='left' className='p-0'>
                     <div className='flex items-center gap-2.5 border-b border-border p-4'>
-                        <span className='flex h-[26px] w-[26px] items-center justify-center rounded-[7px] bg-primary text-[13px] font-bold text-primary-foreground'>
+                        <span className='flex h-6.5 w-6.5 items-center justify-center rounded-[7px] bg-primary text-[13px] font-bold text-primary-foreground'>
                             N
                         </span>
                         <span className='text-[14.5px] font-semibold tracking-tight'>
@@ -67,7 +67,7 @@ export function MobileHeader() {
                         })}
                     </nav>
                     <div className='mt-auto flex items-center gap-2.5 border-t border-border p-4'>
-                        <span className='flex h-[30px] w-[30px] items-center justify-center rounded-full bg-positive-soft text-[12px] font-bold text-positive'>
+                        <span className='flex h-7.5 w-7.5 items-center justify-center rounded-full bg-positive-soft text-[12px] font-bold text-positive'>
                             MK
                         </span>
                         <div>
