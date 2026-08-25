@@ -98,7 +98,7 @@
     --chart-5: oklch(0.269 0 0);
 
     /* 12px base radius */
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     --sidebar: oklch(1 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
@@ -170,6 +170,10 @@
     body {
         @apply bg-background text-foreground;
         font-family: var(--font-inter);
+    }
+
+    input::placeholder {
+        font-family: var(--font-plex-mono);
     }
 }
 

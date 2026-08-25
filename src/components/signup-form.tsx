@@ -117,7 +117,7 @@ export function SignupForm({
                             <div className='mt-1 text-center text-[12.5px] text-muted-foreground'>
                                 Already have an account?{' '}
                                 <Link
-                                    href='#'
+                                    href='/login'
                                     className='font-semibold text-foreground underline underline-offset-4'>
                                     Log in
                                 </Link>
