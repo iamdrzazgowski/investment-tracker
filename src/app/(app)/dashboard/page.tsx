@@ -1,6 +1,7 @@
 import { AddFundsDialog } from '@/components/add-funds-dialog';
 import { Delta } from '@/components/delta';
 import { PageHeader } from '@/components/page-header';
+import { StatRow } from '@/components/stat-row';
 import { fmtEUR, fmtSigned } from '@/lib/format';
 
 export default function DashboardPage() {
@@ -25,6 +26,7 @@ export default function DashboardPage() {
                     </span>
                 </div>
             </div>
+            <StatRow totals={0} />
         </>
     );
 }
