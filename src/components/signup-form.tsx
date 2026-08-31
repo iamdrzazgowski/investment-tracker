@@ -73,6 +73,7 @@ export function SignupForm({
         }
 
         router.push('/dashboard');
+        router.refresh();
     };
 
     return (
