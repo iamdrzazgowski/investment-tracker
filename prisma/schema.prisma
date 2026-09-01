@@ -23,6 +23,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  portfolio     Portfolio?
+
   @@unique([email])
   @@map("user")
 }
@@ -75,4 +77,30 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+enum AssetCategory {
+  STOCK
+  ETF
+  CRYPTO
+}
+
+enum TransactionType {
+  BUY
+  SELL
+}
+
+model Portfolio {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  cashBalance  Decimal @default(0) @db.Decimal(18, 2)
+  baseCurrency String  @default("USD")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+
+  @@map("portfolios")
 }

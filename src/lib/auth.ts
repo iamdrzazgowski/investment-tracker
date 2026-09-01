@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from './prisma';
 import { nextCookies } from 'better-auth/next-js';
+import { createPortfolio } from './repositories/portfolio.repository';
 
 export const auth = betterAuth({
     database: prismaAdapter(prisma, {
@@ -13,6 +14,15 @@ export const auth = betterAuth({
     advanced: {
         database: {
             joins: true,
+        },
+    },
+    databaseHooks: {
+        user: {
+            create: {
+                after: async (user) => {
+                    await createPortfolio(user.id);
+                },
+            },
         },
     },
     plugins: [nextCookies()],
