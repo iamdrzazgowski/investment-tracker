@@ -1,7 +1,6 @@
 'use server';
 
 import { auth } from '@/lib/auth';
-
 import { loginSchema } from '@/lib/validations/auth';
 
 export type LoginState = {
