@@ -1,258 +1,459 @@
-# Skill: Nordwell — Design System (Next.js + Tailwind CSS + shadcn/ui)
+# Nordwell — Design System Skill
 
-This document describes the design system of the **Nordwell** investment app,
-extracted from the existing React prototype, so it can be rebuilt in a
-**Next.js (App Router) + Tailwind CSS + shadcn/ui** stack. It's meant to be a
-reference point for new screens so everything stays consistent and
-"professional" — i.e. restrained, data-first, no gimmicks.
-
----
+This document is the single source of truth for how Nordwell looks, feels, and
+is built. Read this before creating or editing any page, component, or style
+in the app. When in doubt, match an existing pattern described here rather
+than inventing a new one — consistency beats novelty in this codebase.
 
 ## 1. Design philosophy
 
-- **Fintech / private banking**, not a "crypto app" look. Tone: calm,
-  editorial, precise — light background, generous whitespace, a narrow accent
-  palette.
-- **Data over decoration.** Every element (color, icon, chart) carries
-  information (profit/loss, asset category) — nothing is purely ornamental.
-- **Monospace for numbers**, grotesk for content — a classic fintech move
-  that reads as "stock table," not "marketing page."
-- **Minimal color hierarchy**: green = gain, red = loss, everything else in
-  the UI is near-monochrome (cream background, near-black ink, grays).
-- **No decorative gradients or shadows.** The only "effect" is a subtle
-  shadow on modals/tooltips and a fade-to-transparent fill gradient under
-  charts.
+Nordwell is a **premium, minimal fintech product** — think "Trade Republic ×
+modern SaaS dashboard × Bloomberg simplicity," but with its own identity, not
+a copy of any of them.
 
----
+Non-negotiable principles:
 
-## 2. Color tokens
+- **Calm over decorative.** White/off-white canvas, generous whitespace,
+  flat surfaces. No gradients, no glassmorphism, no drop shadows beyond a
+  hairline, no neon, no illustrations.
+- **One accent color only.** Deep emerald green for anything positive
+  (gains, buy actions, confirmations). Muted brick red for anything negative
+  (losses, sell actions, destructive states). Every other surface is neutral
+  gray/black/white. Never introduce a second "brand" hue.
+- **Numbers are the product.** Money, percentages, share counts are always
+  set in a monospace font with tabular numerals. This is the single most
+  important visual signature of the app — it must never be skipped on a
+  financial figure.
+- **Every screen answers "what do I own, what changed, what can I do about
+  it"** — in that order. Value first, delta second, action last.
+- **Flat, not skeuomorphic.** Subtle 1px borders instead of shadows to
+  separate surfaces. Border color does the work shadows would normally do.
 
-Define these as CSS variables in `globals.css` and wire them into
-`tailwind.config` (`hsl(var(--token))`), following shadcn's convention.
+Reject any request that pushes toward: purple gradients, glassmorphism,
+big hero sections, stock photography, colorful multi-hue charts, heavy
+animation, or generic "AI SaaS" aesthetics. If asked for these, flag the
+conflict with this design system before proceeding.
 
-| Token              | Hex       | Role                                       |
-|---------------------|-----------|---------------------------------------------|
-| `--bg`              | `#FAFAF8` | App background                              |
-| `--surface`         | `#FFFFFF` | Cards, sidebar, modals                      |
-| `--border`          | `#E7E4DF` | Rules, borders, table grid lines            |
-| `--border-strong`   | `#D6D2CB` | Border hover, active states                 |
-| `--ink`             | `#15151A` | Primary text, primary buttons               |
-| `--sub`             | `#6F6E76` | Secondary text, labels                      |
-| `--faint`           | `#A6A4AC` | Tertiary text, inactive icons                |
-| `--green`           | `#0C6B4F` | Gain / positive change / positive action     |
-| `--green-soft`      | `#E4F1EA` | Background for green badges/legend           |
-| `--red`             | `#B8403B` | Loss / negative change                       |
-| `--red-soft`        | `#FAEAE8` | Background for red badges                    |
-| `--amber`           | `#9C7A2E` | "Crypto" category accent                     |
-| `--blue`            | `#3E5C8A` | Secondary/reserve accent                     |
+## 2. Tech stack: shadcn/ui + Tailwind CSS — mandatory, not optional
 
-Asset category colors (donut chart, bars, avatars):
+This is a hard technical constraint, not a style preference. Every screen,
+component, and one-off UI tweak in this app is built with **shadcn/ui on top
+of Tailwind CSS**. Do not introduce any other component library, CSS
+framework, or styling approach — not even for "just one quick thing."
 
-| Category | Hex       |
-|----------|-----------|
-| Stocks   | `#15151A` (ink) |
-| ETFs     | `#0C6B4F` (green) |
-| Crypto   | `#B08A3E` |
-| Cash     | `#D6D2CB` (border-strong) |
+**Tailwind CSS**
+- All styling is Tailwind utility classes in JSX `className`. No separate
+  `.css`/`.module.css` files, no `styled-components`/`emotion`, no inline
+  `style={{ ... }}` objects except for truly dynamic, per-instance values
+  that can't be expressed as a class (e.g. a chart's computed gradient `id`,
+  a bar's data-driven `width: ${pct}%`, an `AvatarBadge`'s category-derived
+  background/foreground color pulled from a token map).
+- Compose class strings with the project's `cn()` helper
+  (`lib/utils.ts`, `clsx` + `tailwind-merge`) whenever a component accepts a
+  `className` prop or merges conditional classes — never string-concatenate
+  classes by hand, and never rely on utility order to "win" a conflict.
+- Use Tailwind's spacing/sizing/radius scale (`p-5`, `gap-2.5`, `rounded-lg`,
+  `text-[13px]` for the handful of off-scale sizes this design calls for)
+  rather than arbitrary one-off values where a scale step already fits.
+- Colors are **always** the semantic tokens from §3 (`bg-card`,
+  `text-muted-foreground`, `border-border`, `text-positive`,
+  `text-destructive`, etc.), never a raw Tailwind palette class like
+  `bg-gray-100` or `text-red-500`, and never a hardcoded hex/oklch value
+  inline. If a token doesn't exist yet for a color you need, add it to
+  `globals.css` and `@theme inline` first — don't work around it locally.
+- Dark mode, when relevant, is handled purely by the `.dark` token overrides
+  already defined — never branch styling logic in JSX for light/dark.
 
-**Mapping to the shadcn theme** (example `globals.css`):
+**shadcn/ui**
+- Every interactive primitive — button, card, input, label, table, tabs,
+  dialog, sheet, badge, separator, command palette — is a shadcn/ui
+  component living in `components/ui/`, built on Radix primitives with
+  `class-variance-authority` for variants. Before building any new piece of
+  UI, check `components/ui/` first; if the primitive you need isn't there
+  yet, add it the shadcn way (Radix + `cva` + `cn()`, matching the existing
+  files' structure and prop conventions) rather than hand-rolling a plain
+  `<div>`/`<button>` with ad hoc classes.
+- App-specific components (§7) are always composed *from* these primitives
+  (`Card`, `Button`, `Table`, etc.) — never bypass them to write raw markup
+  that duplicates what a primitive already does.
+- Do not add Radix packages, icon sets, or component libraries that overlap
+  with what shadcn/ui already provides (e.g. no Material UI, Chakra, Ant
+  Design, Headless UI, Mantine — even for a single component). The one
+  approved exception is Recharts for charts (§10), since shadcn/ui has no
+  charting primitive of its own.
+- New shadcn primitives should match the existing ones' file shape exactly:
+  `React.forwardRef`, `displayName` set, variants via `cva` where the
+  primitive has more than one visual style, props spread after `className`
+  is resolved through `cn()`.
 
-```css
-:root {
-  --background: 60 12% 98%;      /* #FAFAF8 */
-  --foreground: 240 8% 9%;       /* #15151A */
-  --card: 0 0% 100%;
-  --card-foreground: 240 8% 9%;
-  --border: 40 10% 90%;          /* #E7E4DF */
-  --input: 40 10% 90%;
-  --muted-foreground: 260 3% 45%; /* #6F6E76 */
-  --primary: 240 8% 9%;          /* ink — primary buttons are black, not blue */
-  --primary-foreground: 0 0% 100%;
-  --destructive: 3 40% 46%;      /* #B8403B */
-  --ring: 240 8% 9%;
-  --radius: 0.75rem;             /* 12px, see Radius section */
-}
-```
+## 3. Color tokens
 
-Also define `--success` (`142 74% 23%` ≈ `#0C6B4F`) — shadcn doesn't ship one
-by default, and it's used here more often than `destructive`.
+Colors live as CSS variables in `app/globals.css` (Tailwind v4, `oklch`
+color space), consumed via `@theme inline` so both plain CSS (`hsl(var(--x))`
+in chart code) and Tailwind utility classes (`bg-primary`, `text-positive`)
+resolve to the same values.
 
----
+| Token | Light value (oklch) | Used for |
+|---|---|---|
+| `--background` | `0.985 0.004 90` (warm off-white) | Page canvas — never pure white |
+| `--card` | `1 0 0` (pure white) | Card/panel surfaces — one step lighter than background |
+| `--foreground` | `0.145 0 0` (near-black) | Primary text |
+| `--muted-foreground` | `0.556 0 0` | Secondary/label text |
+| `--border` | `0.91 0.004 90` | Hairline borders everywhere |
+| `--primary` | `0.145 0 0` (near-black) | Sidebar active state, primary buttons, brand mark |
+| `--primary-foreground` | `0.985 0 0` (white) | Text/icons on `--primary` |
+| `--positive` | `0.45 0.1 162` (deep emerald) | Gains, buy actions, positive deltas |
+| `--positive-soft` | `0.94 0.03 162` | Positive badge backgrounds |
+| `--destructive` | `0.55 0.15 29` (muted brick red) | Losses, sell actions, destructive buttons |
+| `--radius` | `0.75rem` (12px) | Base corner radius for cards, inputs, buttons |
 
-## 3. Typography
+Dark mode variables exist (`.dark` block) and follow the same relationships
+inverted — do not hand-roll dark-mode colors elsewhere; always go through
+these tokens.
 
-- **Display / body:** `Inter` (via `next/font/google`), weights 400–650.
-  The app uses a custom `650` weight for headings — in Tailwind add
-  `fontWeight: { semibold2: '650' }`, or just use `font-semibold` (600) if
-  650 isn't available for the given font.
-- **Numbers / data / tickers:** `IBM Plex Mono` (via `next/font/google`) —
-  used everywhere a monetary value, percentage, or share quantity appears.
-  Helper class `.font-mono` + `tabular-nums` + a slightly negative
-  `tracking` (`-0.01em`) for better column alignment.
-- **Scale:**
-  - Hero value (portfolio balance): `42px / 650 / -0.02em`
-  - Page heading (`h1`): `22px / 650 / -0.015em`
-  - Chart value: `24px / 650`
-  - Card title: `13.5px / 600`
-  - Body / table cells: `13px / 400–600`
-  - Labels / eyebrow: `12px / uppercase / letter-spacing .06em / faint`
-  - Micro (ticker, sub-label): `11.5–12px / faint`
+**Rules:**
+- Never write a raw hex/oklch value in a component. Always use the token
+  (`bg-card`, `text-muted-foreground`, `border-border`, `text-positive`,
+  `text-destructive`). A hardcoded hex is the #1 sign a component has drifted
+  from the design system and needs fixing.
+- Green and red are **only** for gain/loss semantics (`Delta`, badges for
+  buy/sell) or their direct affordances (Buy button = neutral primary, not
+  green — only outcomes are colored, not the action of buying itself).
+- Category colors (Stocks/ETFs/Crypto/Cash in allocation donuts, category
+  bars) are a separate small palette, intentionally *not* the positive/
+  destructive tokens, since they encode category, not sentiment:
+  `Stocks: near-black`, `ETFs: positive green`, `Crypto: amber/gold
+  (#B08A3E)`, `Cash: neutral gray border color`.
 
-```ts
-// tailwind.config.ts (excerpt)
-fontFamily: {
-  sans: ['var(--font-inter)', 'ui-sans-serif', 'system-ui'],
-  mono: ['var(--font-ibm-plex-mono)', 'ui-monospace', 'SFMono-Regular'],
-},
-```
+## 4. Typography
 
----
+Two typefaces, each with one job:
 
-## 4. Layout
+- **Inter** (`--font-sans`) — all UI text: headings, labels, body copy,
+  buttons, navigation.
+- **IBM Plex Mono** (`--font-mono`) — **every number that represents money,
+  a share count, a percentage, or a price.** Applied via the `font-mono`
+  utility (or the app's `.font-tnum` helper for `font-variant-numeric:
+  tabular-nums; letter-spacing: -0.01em;`).
 
-- **Two-column shell**: `216px` sidebar (fixed, `sticky top-0 h-screen`) +
-  a main column with `max-w-[1180px] mx-auto`, padding `32px 40px` (desktop),
-  `20px 16px` (mobile).
-- **Mobile breakpoint: `768px`** — sidebar disappears, a sticky top bar
-  appears (hamburger + page title + search icon) with a `Sheet` (drawer) for
-  navigation.
-- **Two-column grids** (`grid-cols-[1.55fr_1fr]`) collapse to `grid-cols-1`
-  at ≤860px — used e.g. on the Dashboard (chart+movers / donut) and Asset
-  Detail (position / trade form).
-- **Cards are the base layout unit** — every page follows: `PageHeader` →
-  a stack of cards (`gap-[22px]`, `rounded-xl border`, `p-5`).
+Loaded via `next/font/google` in the root `app/layout.tsx`, exposed as CSS
+variables consumed by `@theme inline` in `globals.css` — never load fonts
+any other way (no `<link>` tags, no `@font-face` by hand).
 
----
+**The mono-for-numbers rule is absolute.** A price, a P/L figure, a share
+count, a percentage delta, a portfolio total — all of it is `font-mono`. A
+component that renders a number in the default sans font is a bug. The one
+exception the base `Input` component defaults to `font-mono` (because most
+inputs in this app are numeric — quantity, price) — inputs that collect
+*text*, not numbers (email, name, search query) must explicitly override
+with `font-sans`.
 
-## 5. Mapping to shadcn/ui components
+Type scale in use (approximate, expand as needed but stay within this
+rhythm):
 
-| Prototype element              | shadcn/ui component                                |
-|----------------------------------|------------------------------------------------------|
-| `.it-card`                       | `Card`, `CardHeader`, `CardContent`                   |
-| `it-btn--primary/ghost/outline`  | `Button` (`variant="default"/"outline"/"ghost"`)      |
-| `.it-range-tabs`, filter chips   | `Tabs` / `ToggleGroup` (`type="single"`)              |
-| `.it-table` (Holdings, TX)       | `Table`, `TableHeader`, `TableRow`, `TableCell`       |
-| `.it-modal` (Add funds, order)   | `Dialog`                                              |
-| Search (⌘K)                      | `Command` + `CommandDialog` (cmdk)                    |
-| Mobile navigation drawer         | `Sheet` (`side="left"`)                               |
-| `.it-toast`                      | `sonner` (`toast.success(...)`) or `Toast`            |
-| `it-tx-badge` (Buy/Sell)         | `Badge` (`variant="secondary"`, custom color)         |
-| Avatar (ticker initials)         | `Avatar`, `AvatarFallback`                            |
-| `it-delta` (▲/▼ %)               | custom `<Delta />` on top of `Badge`/`span` + `lucide-react` (`ArrowUpRight/DownRight`) |
-| Price-mode segmented control     | `Tabs` (compact variant) or `ToggleGroup`             |
-| Forms (amount, qty)              | `Input`, `Label`, `Form` (react-hook-form + zod)      |
-| Settings dropdown                | `DropdownMenu` / `Select`                             |
-| Charts                           | `recharts` (as in the prototype), wrapped in shadcn's `ChartContainer` (`chart.tsx`) |
+| Use | Size | Weight |
+|---|---|---|
+| Portfolio hero value | 32–42px | 650–700 |
+| Chart headline value | 24px | 650–700 |
+| Page title | 20–22px | 650–700 |
+| Card title | 13.5–14px | 600 |
+| Body / table cell | 13px | 400–600 |
+| Label / eyebrow / meta | 11–12.5px | 500–600, often uppercase + `tracking-wide` for eyebrows |
 
-Additional packages: `lucide-react` (icons — already used), `recharts`,
-`cmdk` (via shadcn `Command`), `sonner`, `class-variance-authority` (for
-`Delta`/`Badge` variants), `tailwind-merge` + `clsx` (`cn()` helper).
+## 5. Spacing, radius, elevation
 
----
+- Base corner radius is `12px` (`--radius`), used on cards, buttons, inputs,
+  dialogs. Never use a sharper or rounder radius elsewhere — no `rounded-full`
+  except on true circles (avatars, dots).
+- Elevation is **never** a drop shadow. Surfaces are separated by a 1px
+  `border-border` only. The single exception is the modal/dialog overlay
+  (`shadow-lg`/`shadow-2xl` is acceptable there, since it floats above the
+  whole page, not beside another surface).
+- Card padding: `p-5` (20px) is the standard card body padding, header gets
+  slightly less bottom padding (`pb-3`) before content.
+- Page content is capped at `max-w-[1180px]`, centered, with `px-10 py-8` on
+  desktop and `px-4 py-6` on mobile.
+- Grid gaps between cards: `gap-5` (20px) as the default; the two-column
+  dashboard/portfolio layout uses `1.55fr 1fr` as its column ratio (main
+  content wider than the side rail), not an even split.
 
-## 6. Component patterns
+## 6. Core components (`components/ui/`)
 
-### Card
-- `rounded-xl` (12px), `border border-border`, `bg-card`, `p-5`, `mb-[22px]`
-  (in Tailwind terms: use a consistent `space-y-5` on the page instead of
-  per-card margins).
-- Card title: `text-[13.5px] font-semibold mb-3.5` — **do not** use shadcn's
-  default `CardTitle` size (too large); override via `className`.
+Quick lookup — prototype pattern → shadcn/ui primitive to reach for. If a row
+in the app calls for something not on this list, check §2's rule before
+reaching for a third-party component: extend an existing primitive first.
 
-### Delta / percentage change
-- Always icon + value, semantic color (`text-emerald-700` / `text-red-700` —
-  use the `--success`/`--destructive` tokens), `font-semibold`, `font-mono`
-  for the number.
-- Two sizes: `md` (13.5px, in headers) and `sm` (12px, in tables/lists).
+| Pattern in the app | shadcn/ui primitive |
+|---|---|
+| Card / panel | `Card`, `CardHeader`, `CardTitle`, `CardContent` |
+| Primary / outline / ghost button | `Button` (`variant="default"/"outline"/"ghost"`) |
+| Range tabs (`1D 1W 1M...`), category filters | `Tabs`, `TabsList`, `TabsTrigger` |
+| Holdings / transactions table | `Table`, `TableHeader`, `TableRow`, `TableCell` |
+| Add funds / New order / Add to watchlist | `Dialog` |
+| Mobile nav drawer | `Sheet` (`side="left"`) |
+| Global search (`⌘K`) | `Command`, `CommandDialog` (cmdk) |
+| Buy/Sell, Owned/Watching tag | `Badge` (`variant="positive"/"destructive"/"outline"`) |
+| Ticker monogram | `AvatarBadge` (app-specific, §7 — not shadcn's `Avatar`) |
+| Amount / quantity / price field | `Input` + `Label` |
 
-### Holdings table
-- Headers: `text-[11.5px] uppercase tracking-wide text-muted-foreground`.
-- Row: `hover:bg-muted/50 cursor-pointer`, numeric cells `text-right
-  font-mono tabular-nums`.
-- "Asset" cell = `Avatar` (circle, initials, background tied to category) +
-  name (`font-semibold text-sm`) + ticker (`text-muted-foreground text-xs`).
 
-### Performance chart (hero chart)
-- Recharts `AreaChart`, fill gradient fading to 0 in the trend's color
-  (green if positive, red if negative) — **the line color depends on trend
-  direction, it isn't fixed**.
-- Above the chart: a large value (`text-4xl font-semibold font-mono`) +
-  `Delta` + a `Tabs` range selector `1D / 1W / 1M / 3M / 1Y / All` (pill-style
-  `TabsList`, active tab on a white background with `shadow-sm`).
+These are shadcn/ui primitives on Radix, restyled to the tokens above. Build
+new UI out of these — do not create one-off buttons, cards, or inputs.
 
-### Allocation donut
-- Recharts `PieChart`, `innerRadius=52 outerRadius=70`, no on-chart `label`
-  — the legend is separate, on the right (color dot + name + `%`).
+- **`Button`** — variants `default` (primary, near-black bg), `outline`
+  (bordered), `ghost`, `destructive`, `link`. Height `h-9` default, `h-8` for
+  `sm`. Always `rounded-lg`, `font-semibold`, `text-sm`.
+- **`Card` / `CardHeader` / `CardTitle` / `CardContent`** — the base
+  container for every block of content on every page. `CardTitle` is always
+  13.5–14px semibold, no larger.
+- **`Table`** — headers are `text-[11px] font-semibold uppercase
+  tracking-wide text-muted-foreground`; rows get a hover state
+  (`hover:bg-muted/60`) when clickable (i.e., navigate to an asset).
+- **`Tabs`** — pill-style segmented control (`bg-muted` track, active tab
+  gets `bg-card` + `shadow-sm`), used for category filters and time-range
+  selectors alike.
+- **`Dialog`** — centered modal, `rounded-xl`, used for Add funds, New
+  order, Add to watchlist.
+- **`Sheet`** — slide-in drawer from the left, used **only** for the mobile
+  navigation menu (hamburger trigger). Do not repurpose for anything else
+  without reconsidering the mobile nav pattern first.
+- **`Command`** (cmdk-based) — the global search palette (`⌘K` / `/`).
+  Results are grouped by `CommandGroup` per asset category, each item shows
+  avatar, name, ticker, an "Owned"/"Watching" badge if applicable, and price
+  right-aligned in mono.
+- **`Badge`** — variants `default`, `positive`, `destructive`, `outline`.
+  Always uppercase, `text-[10px]`, `font-bold`, used for Buy/Sell tags and
+  Owned/Watching indicators.
+- **`Input` / `Label`** — form fields. Remember the mono-font override rule
+  above for non-numeric inputs.
 
-### Modals (Add funds / New order / Add to watchlist)
-- shadcn `Dialog`; `DialogContent` with no default padding on picker lists
-  (picker list = clickable rows: avatar + name + price, `hover:bg-muted`).
-- "Add funds" form: a single `Input type="number"` field, `Label` above it
-  (`text-xs font-semibold text-muted-foreground`), full-width CTA (`w-full`).
+## 7. App-specific components (`components/`)
 
-### Trade panel (Buy/Sell)
-- "Current market price / Custom price" segmented control → a compact
-  `Tabs` variant (2 columns, `grid-cols-2`, active = black background).
-- Order total: a `flex justify-between` row above the buttons, top border
-  `border-t border-dashed`.
-- Two side-by-side CTAs: `Buy` (`variant="default"`, black), `Sell`
-  (`variant="outline"`) — both `flex-1`.
+These encode Nordwell's own visual signatures — reuse them rather than
+rebuilding the pattern inline.
 
-### Search / command palette
-- Sidebar trigger looks like a disabled input (`bg-muted rounded-lg`,
-  `Search` icon + placeholder + `<kbd>⌘K</kbd>`).
-- The modal itself = `CommandDialog` with groups by category
-  (Stocks/ETFs/Crypto); each result: avatar + name/ticker + "Owned"/
-  "Watching" badge + price on the right (`font-mono`).
+- **`AvatarBadge`** — circular monogram (first 2–3 letters of ticker) with a
+  category-tinted background (near-white for stocks, positive-soft green for
+  ETFs, warm amber-tinted for crypto). This is the *only* "logo" system in
+  the app — never fetch or hardcode real company logo images.
+- **`Delta`** — the up/down arrow + signed percentage or currency figure,
+  colored `text-positive`/`text-destructive`. Every single price/return
+  figure in the app that can move must be wrapped in `Delta`, not
+  hand-rolled with a raw `+`/`-` sign.
+- **`PerformanceChart`** — the canonical area chart: large headline value,
+  `Delta` beneath it, `RangeTabs` (`1D 1W 1M 3M 1Y All`) top-right, gradient
+  fill under the line fading to transparent, minimal axes (both `XAxis` and
+  `YAxis` hidden — the shape communicates, gridlines don't), custom
+  dark-pill tooltip (`bg-foreground text-background`, mono figure). Stroke
+  color is `positive` or `destructive` depending on whether the period is up
+  or down — never a neutral/brand color for the line itself.
+- **`BenchmarkChart`** — same visual language, two lines (solid green =
+  portfolio, dashed gray = benchmark), values indexed to 100 rather than
+  absolute currency.
+- **`Sparkline`** — tiny inline line chart (no axes, no tooltip), used only
+  in dense list rows (watchlist trend column).
+- **`AllocationDonut`** — inner-radius pie chart, category-colored,
+  paired with a text legend showing percentage — never used without the
+  legend, since color alone shouldn't carry the meaning.
+- **`HoldingsTable`**, **`TransactionsList`**, **`CategoryBreakdown`**,
+  **`TopMovers`**, **`HoldingsRanked`** — all follow the same rule: clicking
+  a row/item navigates to `/asset/[ticker]`, cursor is `pointer`, and every
+  numeric column is right-aligned + mono.
+- **`StatRow`** — the 4-up (2-up on mobile) stat grid with hairline
+  dividers between cells (`gap-px bg-border` trick, not actual `border`
+  classes) — reuse this exact technique for any new stat grid rather than
+  adding individual borders per cell.
+- **`PageHeader`** — every page starts with an eyebrow label (uppercase,
+  muted, `tracking-wide`) + a bold title, optionally a right-aligned action
+  button/dialog trigger. Never start a page with anything else.
 
-### Buy/Sell badge
-- `Buy`: `--green-soft` background, `--green` text. `Sell`: `--red-soft`
-  background, `--red` text. Size `text-[10.5px] uppercase font-bold
-  tracking-wide`, shape `rounded-md`, not `rounded-full` (pill shape is
-  reserved for filter chips).
+## 8. Layout & navigation
 
-### Category breakdown bar
-- A thin progress bar (`h-1.5 rounded bg-muted`, fill in the category's
-  color) under each row — a pattern for shadcn's `Progress`, but with a
-  custom color via `indicatorClassName`/`style`.
+- **Desktop:** fixed 224px (`w-56`) left sidebar, `border-r`, containing (top
+  to bottom): brand mark, global search trigger bar, nav items, user footer
+  pinned to the bottom via `mt-auto`. Active nav item gets `bg-primary
+  text-primary-foreground`; nothing else in the app uses that "filled
+  near-black pill" treatment — it is reserved for the active nav state (and
+  primary buttons).
+- **Mobile (<768px):** sidebar is hidden entirely. A sticky top header
+  replaces it: hamburger button (opens the `Sheet` drawer with the same nav
+  list) on the left, current page title centered/left, search icon button on
+  the right. **Do not use a bottom tab bar** — that pattern was explicitly
+  rejected in favor of the hamburger + drawer.
+- **Search** is reachable from both the sidebar (full bar with `⌘K` hint) and
+  the mobile header (icon-only), plus the global `⌘K`/`Ctrl+K`/`/` keyboard
+  shortcut — wire all three to the same shared open/close state, never
+  duplicate the dialog.
+- Six nav items, fixed order, do not reorder or rename without explicit
+  instruction: **Dashboard, Portfolio, Watchlist, Transactions, Analytics,
+  Settings.**
+- **Tap targets on mobile must be at least 36–40px**, even where the visual
+  icon is small. The current icon-only buttons (hamburger trigger, search
+  icon, watchlist remove `X`) render at 26px, which is too small to be a
+  reliable touch target — pad the hit area up to at least `h-9 w-9` (36px)
+  on mobile via padding/`min-h`/`min-w`, not by enlarging the icon itself.
 
----
+## 9. Page-level conventions
 
-## 7. Spacing, radius, shadow scale
+Each page has a distinct job — do not let pages converge into "chart +
+table + donut" copies of each other:
 
-- **Spacing:** base 4px grid; most common values in the UI: `6, 8, 10, 14,
-  16, 20, 22px` → round to Tailwind's `1.5, 2, 2.5, 3.5, 4, 5, 5.5` (or use
-  arbitrary values like `p-[22px]` where 1:1 fidelity matters, e.g. spacing
-  between cards).
-- **Radius:** cards/inputs/modals `12px` (`rounded-xl`), buttons and badges
-  `7–8px` (`rounded-lg`), avatar/dot `full` or `rounded-md` (square dot in
-  the legend), filter chips `rounded-full`.
-- **Shadows:** subtle only — active tab (`shadow-sm`), modal
-  (`shadow-[0_12px_40px_rgba(0,0,0,.18)]`). Cards have **no shadow**, only a
-  `border`.
-- **Border:** `1px solid` everywhere, `--border` by default, `--border-strong`
-  on hover.
+- **Dashboard** — glance/overview. Hero total value + today's delta,
+  `StatRow`, one `PerformanceChart`, then `TopMovers` (gainers/losers, not a
+  full holdings table) beside `AllocationDonut`.
+- **Portfolio** — holdings management. `CategoryBreakdown` bars, category
+  filter `Tabs`, then the **full** `HoldingsTable`. This is the only page
+  with the complete, filterable holdings list.
+- **Watchlist** — followed-but-unowned assets. Table with sparkline trend
+  column, add/remove affordances.
+- **Transactions** — full buy/sell ledger, filterable by type.
+- **Analytics** — insight, not inventory. Two stat rows, `BenchmarkChart`,
+  category return + monthly return bar charts, `HoldingsRanked`. Never add a
+  plain holdings table here — that duplicates Portfolio's job.
+- **Settings** — simple label/value list rows, no cards-within-cards.
+- **`/asset/[ticker]`** — back button, asset header (avatar, name, price,
+  `Delta`), `PerformanceChart`, then a two-column block: position/market
+  details on the left, the `BuySellPanel` on the right.
+- **`/login`, `/signup`** — two-column split. Left: centered form card (max
+  width `xs`, ~320px) built from `LoginForm`/`SignupForm`. Right (hidden
+  below `lg`): `AuthShowcase` — a `bg-primary` (near-black) panel with a
+  faint dot/line grid background, brand mark, a headline + subcopy, and a
+  **decorative echo of the dashboard's area chart** (same gradient/stroke
+  technique, static data) inside a bordered stat card. This right panel
+  exists specifically so auth pages don't feel like a generic template —
+  never replace it with a stock photo or illustration.
 
----
+## 10. Charts (Recharts conventions)
 
-## 8. Responsiveness
+- Library: **Recharts**. Don't introduce a second charting library for
+  consistency's sake unless a chart type Recharts can't do well is required.
+- Area/line charts: hide both axes (`hide` prop), no `CartesianGrid` on the
+  hero performance chart (the fill/line alone should read cleanly against
+  the white card). Bar charts (category/monthly returns) *do* use a subtle
+  horizontal-only `CartesianGrid` (`vertical={false}`, `stroke="hsl(var(--border))"`).
+- Every chart gets a custom `Tooltip` `content` — never the default Recharts
+  tooltip box. Style: `bg-foreground text-background`, small, `rounded-md`,
+  mono figure inside.
+- Bar chart cells are colored per-value with `Cell` (`positive` if ≥0 else
+  `destructive`), radius `[5,5,5,5]` (fully rounded bar ends, not just top).
+- Gradients: `linearGradient` from the line's stroke color at `0.16`
+  opacity down to `0` — this exact fade is the "signature" chart fill, reuse
+  it rather than a flatter/heavier fill.
 
-- `≤860px`: all 2-column grids → 1 column.
-- `≤768px`: sidebar → `Sheet` drawer; sticky mobile header; stat row
-  4→2 columns; hero value 42px→32px.
-- Keep icon-button hit areas ≥40px on mobile (`.it-icon-btn` is 26px in the
-  prototype — bump it to at least 36–40px on mobile for accessibility).
+## 11. Formatting conventions (`lib/format.ts`)
 
----
+Never format a number inline with `toFixed`/`toLocaleString` ad hoc — always
+go through these helpers so the whole app stays byte-for-byte consistent:
 
-## 9. Accessibility & quality (pre-merge checklist)
+- `fmtEUR(v)` — `Intl.NumberFormat('en-IE', { style: 'currency', currency:
+  'EUR' })`. EUR is the app's base currency; don't hardcode `$` anywhere.
+- `fmtNum(v, decimals)` — plain number, decimals default to `2`, but pass
+  `3` for crypto share counts and `0` for stock/ETF share counts (fractional
+  shares aren't modeled for equities in this app).
+- `fmtPct(v)` — always signed (`+1.86%` / `-0.42%`), two decimals.
+- `fmtSigned(v)` — signed currency (`+€1,204.00` / `-€312.50`).
 
-- [ ] Visible `focus-visible:ring-2 ring-ring` on every interactive element
-      (the prototype lacks this — add it during migration).
-- [ ] Contrast of `--faint` (#A6A4AC) on white is **borderline** (~2.3:1) —
-      only use it for helper text ≥12px, never for meaningful content.
-- [ ] Color is never the only signal for gain/loss — it's always paired with
-      a directional arrow icon (`ArrowUpRight/DownRight`) and a sign (+/-).
-- [ ] Currency values: `Intl.NumberFormat` (locale per user settings),
-      currency token `EUR`, always `font-mono tabular-nums`.
-- [ ] `prefers-reduced-motion` respected in drawer/dialog animations.
+## 12. Icons
+
+**lucide-react** only, `strokeWidth={2}` (the library default — don't
+override unless matching an existing exception). Standard sizes: `14–15px`
+inside buttons/badges, `16–17px` in nav items, `18px` in the mobile bottom
+elements. Never mix in a second icon set.
+
+## 13. Interaction & motion
+
+- Hover states are subtle: background shifts to `bg-muted`/`bg-accent`,
+  border darkens one step (`border-border` → `hover:border-foreground/25`
+  or similar) — no scale transforms, no shadows appearing on hover.
+- Disabled buttons: `opacity-50`, `pointer-events-none` — never hide a
+  disabled action, gray it out so the affordance stays visible (this matters
+  a lot for Buy/Sell buttons, which are frequently in a disabled state
+  pending valid input).
+- Dialogs/Sheets use the built-in Radix `data-[state=open|closed]` animate-in/
+  animate-out utilities (`tw-animate-css` / `tailwindcss-animate`) — keep
+  animation durations short (150–300ms), never add bespoke easing curves.
+- A successful action (buy, sell) shows a small inline confirmation chip
+  (`bg-positive-soft text-positive`, checkmark icon) directly in the panel
+  that triggered it — not a global toast system.
+
+## 14. Content & data rules
+
+- All monetary examples in mock/seed data are EUR-denominated, formatted per
+  §10.
+- Company/asset "logos" are always the `AvatarBadge` monogram system (§6) —
+  never a fetched image, never a placeholder photo.
+- Never invent a real, identifiable brand's exact visual identity (logo
+  mark, exact brand color) for a fictional asset — tickers/company names in
+  seed data (AAPL, VWCE, BTC, etc.) are for realism, not for pixel-matching
+  the real company's press-kit branding.
+
+## 15. File/naming conventions
+
+- One component per file, PascalCase export matching a kebab-case filename
+  (`AvatarBadge` → `avatar-badge.tsx`).
+- shadcn primitives live in `components/ui/`; everything app-specific lives
+  flat in `components/`. Don't create deeper nesting (no
+  `components/dashboard/`, `components/charts/` subfolders) — the flat
+  structure is intentional for this project's size.
+- Shared formatting/data helpers live in `lib/` (`lib/format.ts`,
+  `lib/data.ts`, `lib/utils.ts`, `lib/portfolio-context.tsx`) — a component
+  should never redefine a formatter or duplicate seed data locally.
+
+## 16. Accessibility & quality
+
+These are gaps in the current implementation, not yet-solved theory — treat
+them as required fixes when you touch a component, not optional polish:
+
+- **Every interactive element needs a visible focus state**
+  (`focus-visible:ring-2 ring-ring`, using the existing `--ring` token). The
+  current components mostly rely on `:hover` only — don't ship a new
+  interactive element without also handling keyboard focus.
+- **`text-muted-foreground` (the "faint" tier) has borderline contrast on
+  the light background** (roughly 2.3:1 against `--background`/`--card`).
+  Only use it for helper/meta text at **12px or larger** — never for
+  anything that carries meaning on its own (a number, a label someone must
+  read to understand the screen). If in doubt, promote the text to
+  `text-foreground` or bump its size.
+- **Color is never the only signal for gain/loss.** `Delta` already pairs
+  color with a directional arrow icon (`ArrowUpRight`/`ArrowDownRight`) and
+  an explicit `+`/`-` sign — never add a plain color-only indicator (e.g. a
+  colored dot with no icon/sign) anywhere else in the app for the same kind
+  of data.
+- **Respect `prefers-reduced-motion`** in `Dialog`/`Sheet` open/close
+  animations and any future transition — Radix's data-state animations
+  should degrade to an instant show/hide rather than a full slide/fade for
+  users who've opted out of motion.
+- Currency values always go through `Intl.NumberFormat` via `fmtEUR` (§11),
+  never a manually concatenated `€` + number — locale-correct formatting is
+  part of accessibility too (screen readers and browser number handling
+  depend on it), not just visual consistency.
+
+## 17. Before you ship a new page or component
+
+Checklist — go through this every time:
+
+1. Does every number use `font-mono` / the mono helper? Is every currency
+   value routed through `fmtEUR`/`fmtSigned`, every percentage through
+   `fmtPct`?
+2. Is every gain/loss figure wrapped in `Delta`, not a hand-rolled `+`/`-`?
+3. Are all colors coming from tokens (`bg-card`, `text-muted-foreground`,
+   `border-border`, `text-positive`/`text-destructive`) — zero hardcoded hex?
+4. Is the corner radius consistent (12px base, via the shared `Card`/
+   `Button`/`Input` components rather than a one-off `rounded-*` value)?
+5. Does the page open with `PageHeader` (eyebrow + title [+ action])?
+6. If it's a list of assets, does each row navigate to `/asset/[ticker]`
+   and use `AvatarBadge` for the icon?
+7. On mobile, does nothing rely on a bottom tab bar, and does the hamburger
+   `Sheet` still reach this page?
+8. Have you reused an existing chart component/pattern instead of hand-
+   rolling a new Recharts config from scratch?
+9. Is everything styled with Tailwind utility classes (via `cn()` where
+   applicable) and built from `components/ui/` shadcn primitives — no
+   separate CSS file, no inline `style` for anything that could be a class,
+   no competing UI/component library pulled in?
+10. Does every new interactive element have a visible `focus-visible` state,
+    and does nothing rely on `text-muted-foreground` below 12px for
+    meaningful content (§16)?
+
+If any answer is "no," fix it before considering the work done — small
+drifts here compound quickly into an inconsistent product.
