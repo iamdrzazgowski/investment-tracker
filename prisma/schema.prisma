@@ -90,6 +90,8 @@ enum TransactionType {
   SELL
 }
 
+// Portfolio — 1:1 z Better Auth User. Osobny model, żeby dane finansowe
+// były odseparowane od tabeli tożsamości zarządzanej przez Better Auth.
 model Portfolio {
   id     String @id @default(cuid())
   userId String @unique
@@ -101,6 +103,124 @@ model Portfolio {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  holdings       Holding[]
+  transactions   Transaction[]
+  watchlistItems WatchlistItem[]
+  snapshots      PortfolioSnapshot[]
 
   @@map("portfolios")
+}
+
+// Asset — katalog rynkowy, współdzielony między wszystkimi userami.
+// Kategoria decyduje, skąd job pobiera cenę: STOCK/ETF -> yahoo-finance2,
+// CRYPTO -> CoinGecko (bez osobnego pola providera, bo wynika wprost z category).
+model Asset {
+  id       String        @id @default(cuid())
+  ticker   String        @unique // symbol w UI: "AAPL", "VWCE", "BTC"
+  name     String
+  category AssetCategory
+  currency String        @default("USD")
+
+  externalSymbol String // Yahoo: zwykle == ticker (czasem z sufiksem giełdy, np. "CDR.WA")
+
+  lastPrice        Decimal?  @db.Decimal(18, 6)
+  lastPriceAt      DateTime?
+  dayChangePercent Decimal?  @db.Decimal(8, 4)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  priceSnapshots PriceSnapshot[]
+  holdings       Holding[]
+  transactions   Transaction[]
+  watchlistItems WatchlistItem[]
+
+  @@unique([category, externalSymbol])
+  @@index([category])
+  @@map("assets")
+}
+
+// PriceSnapshot — historia ceny POJEDYNCZEGO aktywa (z Yahoo/CoinGecko).
+// Używane m.in. do liczenia wartości portfela w danym momencie
+// oraz do wykresu benchmarku (np. MSCI World jako zwykły Asset).
+model PriceSnapshot {
+  id        String   @id @default(cuid())
+  assetId   String
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  price     Decimal  @db.Decimal(18, 6)
+  fetchedAt DateTime @default(now())
+
+  @@index([assetId, fetchedAt(sort: Desc)])
+  @@map("price_snapshots")
+}
+
+// PortfolioSnapshot — historia wartości CAŁEGO portfela w czasie.
+// To jest źródło danych dla wykresów (Dashboard/Portfolio/Analytics,
+// zakresy 1D/1W/1M/3M/1Y/All) — bez tego nie ma z czego rysować wykresu,
+// tylko punkt "tu i teraz". Zapisywane cyklicznie przez cron job.
+model PortfolioSnapshot {
+  id          String    @id @default(cuid())
+  portfolioId String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+
+  totalValue    Decimal @db.Decimal(18, 2) // holdings (wg cen z tego momentu) + cash
+  investedValue Decimal @db.Decimal(18, 2) // suma kosztu zakupu — do P/L w czasie
+  cashValue     Decimal @db.Decimal(18, 2)
+
+  capturedAt DateTime @default(now())
+
+  @@index([portfolioId, capturedAt(sort: Desc)])
+  @@map("portfolio_snapshots")
+}
+
+// Holding — pozycja usera w danym Asset (ile ma + po ile średnio kupił).
+model Holding {
+  id          String    @id @default(cuid())
+  portfolioId String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  assetId     String
+  asset       Asset     @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  shares  Decimal @db.Decimal(24, 8) // precyzja pod krypto, np. 0.00042100 BTC
+  avgCost Decimal @db.Decimal(18, 6)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([portfolioId, assetId]) // jedna pozycja na aktywo w portfelu
+  @@map("holdings")
+}
+
+// Transaction — niemutowalna historia zleceń (buy/sell).
+model Transaction {
+  id          String          @id @default(cuid())
+  portfolioId String
+  portfolio   Portfolio       @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  assetId     String
+  asset       Asset           @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  type     TransactionType
+  quantity Decimal @db.Decimal(24, 8)
+  price    Decimal @db.Decimal(18, 6)
+
+  executedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@index([portfolioId, executedAt(sort: Desc)])
+  @@index([assetId])
+  @@map("transactions")
+}
+
+// WatchlistItem — aktywa obserwowane, ale nieposiadane.
+model WatchlistItem {
+  id          String    @id @default(cuid())
+  portfolioId String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  assetId     String
+  asset       Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  addedAt DateTime @default(now())
+
+  @@unique([portfolioId, assetId])
+  @@map("watchlist_items")
 }
