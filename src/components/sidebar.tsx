@@ -5,18 +5,14 @@ import { usePathname } from 'next/navigation';
 import { NAV } from '@/components/nav-items';
 // import { SearchTrigger } from "@/components/global-search";
 import { cn } from '@/lib/utils';
+import { NordwellLogo } from './nordwell-logo';
 
 export function Sidebar() {
     const pathname = usePathname();
     return (
         <aside className='sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-border bg-card p-3.5 md:flex'>
             <div className='flex items-center gap-2.5 px-2.5 pb-4 pt-1'>
-                <span className='flex h-6.5 w-6.5 items-center justify-center rounded-[7px] bg-primary text-[13px] font-bold text-primary-foreground'>
-                    N
-                </span>
-                <span className='text-[14.5px] font-semibold tracking-tight'>
-                    Nordwell
-                </span>
+                <NordwellLogo />
             </div>
             {/* <SearchTrigger variant="bar" /> */}
             <nav className='flex flex-col gap-0.5'>

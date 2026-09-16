@@ -1,4 +1,6 @@
 import React from 'react';
+import { NordwellLogo } from '../nordwell-logo';
+import Link from 'next/link';
 
 export default function Showcase() {
     return (
@@ -12,15 +14,9 @@ export default function Showcase() {
                 }}
             />
 
-            <div className='relative flex items-center gap-2'>
-                <span className='flex size-7 items-center justify-center rounded-md bg-white text-sm font-bold text-[#15151A]'>
-                    N
-                </span>
-
-                <span className='text-[15px] font-semibold tracking-tight text-white'>
-                    Nordwell
-                </span>
-            </div>
+            <Link href='/'>
+                <NordwellLogo inverse={true} />
+            </Link>
 
             <div className='relative'>
                 <h2 className='mb-3 max-w-[320px] text-[26px] font-bold leading-tight tracking-tight text-white'>

@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu } from 'lucide-react';
@@ -13,10 +13,11 @@ import {
 import { NAV } from '@/components/nav-items';
 // import { SearchTrigger } from "@/components/global-search";
 import { cn } from '@/lib/utils';
+import { NordwellLogo } from './nordwell-logo';
 
 export function MobileHeader() {
     const pathname = usePathname();
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
     const current = NAV.find(
         (n) =>
             n.href === pathname ||
@@ -26,6 +27,9 @@ export function MobileHeader() {
     return (
         <header className='sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-card/95 px-4 py-3 backdrop-blur md:hidden'>
             <Sheet open={open} onOpenChange={setOpen}>
+                <span className='flex-1 text-sm font-semibold'>
+                    {current?.label ?? 'Nordwell'}
+                </span>
                 <SheetTrigger
                     className='flex h-8 w-8 items-center justify-center rounded-lg border border-border'
                     aria-label='Open menu'>
@@ -33,12 +37,7 @@ export function MobileHeader() {
                 </SheetTrigger>
                 <SheetContent side='left' className='p-0'>
                     <div className='flex items-center gap-2.5 border-b border-border p-4'>
-                        <span className='flex h-6.5 w-6.5 items-center justify-center rounded-[7px] bg-primary text-[13px] font-bold text-primary-foreground'>
-                            N
-                        </span>
-                        <span className='text-[14.5px] font-semibold tracking-tight'>
-                            Nordwell
-                        </span>
+                        <NordwellLogo />
                     </div>
                     <nav className='flex flex-col gap-0.5 p-3'>
                         {NAV.map((n) => {
@@ -81,9 +80,9 @@ export function MobileHeader() {
                     </div>
                 </SheetContent>
             </Sheet>
-            <span className='flex-1 text-sm font-semibold'>
+            {/*<span className='flex-1 text-sm font-semibold'>
                 {current?.label ?? 'Nordwell'}
-            </span>
+            </span>*/}
             {/* <SearchTrigger variant="icon" /> */}
         </header>
     );
