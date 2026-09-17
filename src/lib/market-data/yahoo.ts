@@ -4,15 +4,10 @@ import type { Range } from '@/lib/data';
 
 const yahooFinance = new YahooFinance();
 
-function mapYahooQuoteType(
-    quoteType: string | undefined,
-): 'STOCK' | 'ETF' | 'CRYPTO' {
+function mapYahooQuoteType(quoteType: string | undefined): 'STOCK' | 'ETF' {
     switch (quoteType) {
         case 'ETF':
             return 'ETF';
-
-        case 'CRYPTOCURRENCY':
-            return 'CRYPTO';
 
         case 'EQUITY':
             return 'STOCK';
