@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { useMemo, useState } from 'react';
 import {
     Area,
     AreaChart,
@@ -11,33 +11,9 @@ import {
 } from 'recharts';
 import { Card } from '@/components/ui/card';
 import { Delta } from '@/components/delta';
-import { genSeries, RANGE_CHANGE, RANGES, type Range } from '@/lib/data';
+import { genSeries, RANGE_CHANGE, type Range } from '@/lib/data';
 import { fmtEUR } from '@/lib/format';
-import { cn } from '@/lib/utils';
-
-export function RangeTabs({
-    value,
-    onChange,
-}: {
-    value: Range;
-    onChange: (r: Range) => void;
-}) {
-    return (
-        <div className='inline-flex items-center gap-0.5 rounded-lg border border-border bg-muted p-1'>
-            {RANGES.map((r) => (
-                <button
-                    key={r}
-                    onClick={() => onChange(r)}
-                    className={cn(
-                        'rounded-md px-2.5 py-1 text-xs font-semibold text-muted-foreground transition-colors',
-                        value === r && 'bg-card text-foreground shadow-sm',
-                    )}>
-                    {r}
-                </button>
-            ))}
-        </div>
-    );
-}
+import { RangeTabs } from './range-tabs';
 
 export function PerformanceChart({
     seed,
@@ -48,8 +24,8 @@ export function PerformanceChart({
     endValue: number;
     height?: number;
 }) {
-    const [range, setRange] = React.useState<Range>('1M');
-    const data = React.useMemo(
+    const [range, setRange] = useState<Range>('1M');
+    const data = useMemo(
         () => genSeries(seed, endValue, range),
         [seed, endValue, range],
     );
@@ -100,7 +76,7 @@ export function PerformanceChart({
                         <YAxis hide domain={['dataMin - 5', 'dataMax + 5']} />
                         <Tooltip
                             cursor={{
-                                stroke: 'hsl(var(--border))',
+                                stroke: 'var(--border)',
                                 strokeWidth: 1,
                             }}
                             content={({ active, payload }) =>

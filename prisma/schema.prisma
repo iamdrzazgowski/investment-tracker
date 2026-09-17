@@ -116,7 +116,7 @@ model Portfolio {
 // CRYPTO -> CoinGecko (bez osobnego pola providera, bo wynika wprost z category).
 model Asset {
   id             String        @id @default(cuid())
-  ticker         String
+  ticker         String        @unique
   name           String
   category       AssetCategory
   currency       String        @default("USD")
@@ -135,8 +135,6 @@ model Asset {
   transactions   Transaction[]
   watchlistItems WatchlistItem[]
 
-  @@unique([category, externalSymbol])
-  @@index([ticker])
   @@index([category])
   @@map("assets")
 }
