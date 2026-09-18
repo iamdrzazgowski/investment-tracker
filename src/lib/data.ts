@@ -7,6 +7,7 @@ export interface AssetMeta {
     price: number;
     day: number;
     seed: number;
+    exchange?: string;
 }
 
 export interface Holding extends AssetMeta {

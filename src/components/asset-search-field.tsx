@@ -155,8 +155,12 @@ export function AssetSearchField({
 
                                     <div className='text-[11.5px] text-muted-foreground'>
                                         {asset.t} ·{' '}
+                                        {asset.exchange &&
+                                            `${asset.exchange} · `}
                                         <span className='font-mono'>
-                                            {fmtEUR(asset.price)}
+                                            {asset.price != null
+                                                ? fmtEUR(asset.price)
+                                                : '—'}
                                         </span>
                                     </div>
                                 </div>

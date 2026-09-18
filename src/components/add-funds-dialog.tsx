@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 import { Plus } from 'lucide-react';
 
-import { addFundsAction } from '@/actions/portfolio';
+import { addFundsAction } from '@/actions/portfolio.actions';
 
 import { Button } from '@/components/ui/button';
 
