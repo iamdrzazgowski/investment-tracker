@@ -118,10 +118,11 @@ model Asset {
   id             String        @id @default(cuid())
   ticker         String        @unique
   name           String
+  coinGeckoId    String?
   category       AssetCategory
   currency       String        @default("USD")
   exchange       String?
-  externalSymbol String
+  externalSymbol String?
 
   lastPrice        Decimal?  @db.Decimal(18, 6)
   lastPriceAt      DateTime?
