@@ -18,6 +18,15 @@ interface YahooCandidate {
     exchange: string | null;
 }
 
+interface YahooQuote {
+    name: string;
+    category: 'STOCK' | 'ETF';
+    currency: string;
+    exchange: string | null;
+    price: number;
+    dayChangePercent: number;
+}
+
 export async function searchYahooEquities(
     query: string,
 ): Promise<YahooSearchResult[]> {
@@ -94,7 +103,7 @@ export async function searchYahooEquities(
     );
 }
 
-export async function fetchYahooQuote(symbol: string) {
+export async function fetchYahooQuote(symbol: string): Promise<YahooQuote> {
     const q = await yahooFinance.quote(symbol);
     return {
         name: q.shortName ?? q.longName ?? symbol,
