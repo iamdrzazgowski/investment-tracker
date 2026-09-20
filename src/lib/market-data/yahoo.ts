@@ -31,18 +31,21 @@ export async function searchYahooEquities(
         .filter((q) => q.quoteType === 'EQUITY' || q.quoteType === 'ETF')
         .map((q): YahooCandidate => {
             const raw = q;
+
             const name: string =
-                typeof raw.longname === 'string'
+                typeof raw.longname === 'string' && raw.longname.trim()
                     ? raw.longname
-                    : typeof raw.shortname === 'string'
+                    : typeof raw.shortname === 'string' && raw.shortname.trim()
                       ? raw.shortname
                       : q.symbol;
+            const cleanName = name.replace(/\s+/g, ' ').trim();
+
             const exchange: string | null =
                 typeof raw.exchange === 'string' ? raw.exchange : null;
 
             return {
                 symbol: q.symbol,
-                name,
+                name: cleanName,
                 category: q.quoteType === 'ETF' ? 'ETF' : 'STOCK',
                 exchange,
             };
