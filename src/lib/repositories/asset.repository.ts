@@ -1,7 +1,14 @@
 import { prisma } from '@/lib/prisma';
-import { fetchYahooQuote, searchYahooEquities } from '@/lib/market-data/yahoo';
+import {
+    fetchYahooHistory,
+    fetchYahooQuote,
+    searchYahooEquities,
+} from '@/lib/market-data/yahoo';
 import type { AssetModel as Asset } from '../../../generated/prisma/models';
 import type { AssetCategory } from '../../../generated/prisma/enums';
+import { unstable_cache } from 'next/cache';
+import { Range } from '@/lib/data';
+import { RANGE_REVALIDATE_SECONDS } from '../market-data/range-config';
 
 const STALE_AFTER_MS = 5 * 60 * 1000;
 
@@ -120,4 +127,14 @@ export async function searchAssets(
     }
 
     return [...local.map(toResult), ...external].slice(0, 20);
+}
+
+export async function getAssetPriceHistory(asset: Asset, range: Range) {
+    const cached = unstable_cache(
+        async () => fetchYahooHistory(asset.ticker, range),
+        ['asset-history', asset.ticker, range],
+        { revalidate: RANGE_REVALIDATE_SECONDS[range] },
+    );
+
+    return cached();
 }
