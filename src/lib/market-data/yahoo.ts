@@ -2,7 +2,7 @@ import YahooFinance from 'yahoo-finance2';
 import { RANGE_TO_YAHOO } from './range-config';
 import { Range } from '@/lib/data';
 
-const yahooFinance = new YahooFinance();
+export const yahooFinance = new YahooFinance();
 
 export interface YahooSearchResult {
     symbol: string;

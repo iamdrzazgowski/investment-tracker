@@ -3,6 +3,7 @@ import {
     fetchYahooHistory,
     fetchYahooQuote,
     searchYahooEquities,
+    yahooFinance,
 } from '@/lib/market-data/yahoo';
 import type { AssetModel as Asset } from '../../../generated/prisma/models';
 import type { AssetCategory } from '../../../generated/prisma/enums';
@@ -137,4 +138,73 @@ export async function getAssetPriceHistory(asset: Asset, range: Range) {
     );
 
     return cached();
+}
+
+export interface SyncResult {
+    ticker: string;
+    status: 'ok' | 'error';
+    message?: string;
+}
+
+export async function syncAllAssetPrices(): Promise<SyncResult[]> {
+    const assets = await prisma.asset.findMany();
+    if (assets.length === 0) return [];
+
+    let quoteBySymbol = new Map<
+        string,
+        { price: number; dayChangePercent: number }
+    >();
+    try {
+        const symbols = assets.map((a) => a.ticker);
+        const quotes = await yahooFinance.quote(symbols);
+        const quoteArray = Array.isArray(quotes) ? quotes : [quotes];
+
+        quoteBySymbol = new Map(
+            quoteArray
+                .filter((q) => typeof q.regularMarketPrice === 'number')
+                .map((q) => [
+                    q.symbol,
+                    {
+                        price: q.regularMarketPrice as number,
+                        dayChangePercent:
+                            typeof q.regularMarketChangePercent === 'number'
+                                ? q.regularMarketChangePercent
+                                : 0,
+                    },
+                ]),
+        );
+    } catch (err) {
+        return assets.map((a) => ({
+            ticker: a.ticker,
+            status: 'error' as const,
+            message: String(err),
+        }));
+    }
+
+    const results: SyncResult[] = [];
+    for (const asset of assets) {
+        const quote = quoteBySymbol.get(asset.ticker);
+        if (!quote) {
+            results.push({
+                ticker: asset.ticker,
+                status: 'error',
+                message: 'No quote returned by Yahoo',
+            });
+            continue;
+        }
+
+        await prisma.asset.update({
+            where: { id: asset.id },
+            data: {
+                lastPrice: quote.price,
+                lastPriceAt: new Date(),
+                dayChangePercent: quote.dayChangePercent,
+            },
+        });
+        await prisma.priceSnapshot.create({
+            data: { assetId: asset.id, price: quote.price },
+        });
+        results.push({ ticker: asset.ticker, status: 'ok' });
+    }
+    return results;
 }
