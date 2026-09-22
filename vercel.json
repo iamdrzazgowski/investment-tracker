@@ -1,0 +1,8 @@
+{
+    "crons": [
+        {
+            "path": "/api/cron/sync-prices",
+            "schedule": "*/15 9-17 * * 1-5"
+        }
+    ]
+}
