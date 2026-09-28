@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState, useTransition } from 'react';
 import {
     Area,
     AreaChart,
@@ -11,31 +11,44 @@ import {
 } from 'recharts';
 import { Card } from '@/components/ui/card';
 import { Delta } from '@/components/delta';
-import { genSeries, RANGE_CHANGE, type Range } from '@/lib/data';
+import type { Range } from '@/lib/data';
 import { fmtEUR } from '@/lib/format';
+import { getAssetHistoryAction } from '@/actions/asset.actions';
 import { RangeTabs } from './range-tabs';
 
-export function PerformanceChart({
-    seed,
-    endValue,
+type Point = { i: number; v: number; date: string };
+
+export function AssetPriceChart({
+    ticker,
+    initialRange,
+    initialData,
     height = 300,
 }: {
-    seed: number;
-    endValue: number;
+    ticker: string;
+    initialRange: Range;
+    initialData: Point[];
     height?: number;
 }) {
-    const [range, setRange] = useState<Range>('1M');
-    const data = useMemo(
-        () => genSeries(seed, endValue, range),
-        [seed, endValue, range],
-    );
-    const changePct =
-        RANGE_CHANGE[range] *
-        (seed % 2 === 0 ? 1 : 0.7) *
-        (seed % 3 === 0 ? -1 : 1);
-    const positive = data[data.length - 1].v >= data[0].v;
+    const [range, setRange] = useState<Range>(initialRange);
+    const [data, setData] = useState<Point[]>(initialData);
+    const [isPending, startTransition] = useTransition();
+
+    function handleRangeChange(next: Range) {
+        setRange(next);
+        startTransition(async () => {
+            const points = await getAssetHistoryAction(ticker, next);
+            setData(points);
+        });
+    }
+
+    const endValue = data.at(-1)?.v ?? 0;
+    const startValue = data[0]?.v ?? endValue;
+    const changePct = startValue
+        ? ((endValue - startValue) / startValue) * 100
+        : 0;
+    const positive = endValue >= startValue;
     const stroke = positive ? 'var(--positive)' : 'var(--destructive)';
-    const gradId = `grad-${seed}`;
+    const gradId = `grad-${ticker}`;
 
     return (
         <Card className='p-5'>
@@ -46,9 +59,14 @@ export function PerformanceChart({
                     </div>
                     <Delta value={changePct} />
                 </div>
-                <RangeTabs value={range} onChange={setRange} />
+                <RangeTabs value={range} onChange={handleRangeChange} />
             </div>
-            <div style={{ height }}>
+            <div
+                style={{
+                    height,
+                    opacity: isPending ? 0.5 : 1,
+                    transition: 'opacity 150ms',
+                }}>
                 <ResponsiveContainer width='100%' height='100%'>
                     <AreaChart
                         data={data}
@@ -73,7 +91,7 @@ export function PerformanceChart({
                             </linearGradient>
                         </defs>
                         <XAxis dataKey='i' hide />
-                        <YAxis hide domain={['dataMin - 5', 'dataMax + 5']} />
+                        <YAxis hide domain={['dataMin - 1', 'dataMax + 1']} />
                         <Tooltip
                             cursor={{
                                 stroke: 'var(--border)',
