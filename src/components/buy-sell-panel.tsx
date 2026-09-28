@@ -7,21 +7,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
-import { fmtEUR, fmtNum } from '@/lib/format';
+import { fmtCurrency, fmtNum } from '@/lib/format';
 import { buyAction, sellAction } from '@/actions/portfolio.actions';
 
 export function BuySellPanel({
     ticker,
     marketPrice,
+    currency,
     owned,
     ownedShares,
     cash,
+    cashCurrency,
 }: {
     ticker: string;
     marketPrice: number;
+    currency: string;
     owned: boolean;
     ownedShares: number;
     cash: number;
+    cashCurrency: string;
 }) {
     const [priceMode, setPriceMode] = useState<'market' | 'custom'>('market');
     const [customPrice, setCustomPrice] = useState(marketPrice.toFixed(2));
@@ -34,6 +38,9 @@ export function BuySellPanel({
     const qtyNum = parseFloat(qty) || 0;
     const total = qtyNum * price;
 
+    // Uwaga: to porównanie jest przybliżone, jeśli currency !== cashCurrency
+    // (np. gotówka w EUR, cena w PLN) — bez kursu wymiany nie da się tego
+    // porównać dokładnie. Patrz komentarz pod kodem.
     const canBuy =
         qtyNum > 0 && price > 0 && total <= cash + 0.005 && !isPending;
     const canSell =
@@ -102,7 +109,7 @@ export function BuySellPanel({
                     </div>
                     {priceMode === 'market' ? (
                         <div className='rounded-lg bg-muted px-3 py-2 font-mono text-[15px] font-bold'>
-                            {fmtEUR(marketPrice)}{' '}
+                            {fmtCurrency(marketPrice, currency)}{' '}
                             <span className='font-sans text-[11.5px] font-normal text-muted-foreground'>
                                 / unit
                             </span>
@@ -120,7 +127,9 @@ export function BuySellPanel({
 
                 <div className='flex items-center justify-between border-t border-dashed border-border pt-3 text-sm font-semibold'>
                     <span>Order total</span>
-                    <span className='font-mono'>{fmtEUR(total)}</span>
+                    <span className='font-mono'>
+                        {fmtCurrency(total, currency)}
+                    </span>
                 </div>
 
                 <div className='flex gap-2.5 pt-1'>
@@ -141,7 +150,10 @@ export function BuySellPanel({
 
                 <p className='text-[11.5px] text-muted-foreground'>
                     {owned && `You own ${fmtNum(ownedShares, 0)} ${ticker}. `}
-                    Cash available: {fmtEUR(cash)}.
+                    Cash available: {fmtCurrency(cash, cashCurrency)}
+                    {currency !== cashCurrency &&
+                        ' (different currency — no FX conversion applied)'}
+                    .
                 </p>
 
                 {toast && (

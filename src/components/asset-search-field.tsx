@@ -6,7 +6,7 @@ import { Loader2, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AvatarBadge } from '@/components/avatar-badge';
 import type { AssetSearchResult } from '@/lib/repositories/asset.repository';
-import { fmtEUR } from '@/lib/format';
+import { fmtCurrency } from '@/lib/format';
 
 type SearchFormValues = { query: string };
 
@@ -133,7 +133,10 @@ export function AssetSearchField({
                                         {asset.t} ·{' '}
                                         <span className='font-mono'>
                                             {asset.price != null
-                                                ? fmtEUR(asset.price)
+                                                ? fmtCurrency(
+                                                      asset.price,
+                                                      asset.currency,
+                                                  )
                                                 : '—'}
                                         </span>
                                     </div>

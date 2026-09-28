@@ -16,39 +16,27 @@ const STALE_AFTER_MS = 5 * 60 * 1000;
 export interface AssetSearchResult {
     t: string;
     name: string;
-    cat: 'Stocks' | 'ETFs' | 'Crypto';
+    cat: 'Stocks' | 'ETFs';
+    currency: string;
     price: number | null;
     day: number;
-    seed: number;
-}
-
-function categoryToDisplay(cat: AssetCategory): 'Stocks' | 'ETFs' | 'Crypto' {
-    if (cat === 'ETF') return 'ETFs';
-    if (cat === 'CRYPTO') return 'Crypto';
-    return 'Stocks';
-}
-
-function seedFromTicker(ticker: string): number {
-    let hash = 0;
-    for (let i = 0; i < ticker.length; i++)
-        hash = (hash * 31 + ticker.charCodeAt(i)) | 0;
-    return Math.abs(hash) % 1000;
 }
 
 function toResult(a: {
     ticker: string;
     name: string;
     category: AssetCategory;
+    currency: string;
     lastPrice: unknown;
     dayChangePercent: unknown;
 }): AssetSearchResult {
     return {
         t: a.ticker,
         name: a.name,
-        cat: categoryToDisplay(a.category),
+        cat: a.category === 'ETF' ? 'ETFs' : 'Stocks',
+        currency: a.currency,
         price: a.lastPrice != null ? Number(a.lastPrice) : null,
         day: a.dayChangePercent ? Number(a.dayChangePercent) : 0,
-        seed: seedFromTicker(a.ticker),
     };
 }
 
@@ -118,10 +106,9 @@ export async function searchAssets(
                     r.category === 'ETF'
                         ? ('ETFs' as const)
                         : ('Stocks' as const),
-                price: r.price ?? 0,
+                currency: r.currency,
+                price: r.price,
                 day: r.dayChangePercent ?? 0,
-                seed: seedFromTicker(r.symbol),
-                exchange: r.exchange,
             }));
     } catch (err) {
         console.error('Yahoo search failed:', err);

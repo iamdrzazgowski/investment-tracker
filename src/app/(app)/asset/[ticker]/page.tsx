@@ -76,6 +76,7 @@ export default async function AssetDetailPage({
             <div className='mb-5'>
                 <AssetPriceChart
                     ticker={asset.ticker}
+                    currency={asset.currency}
                     initialRange={DEFAULT_RANGE}
                     initialData={initialData}
                 />
@@ -181,9 +182,11 @@ export default async function AssetDetailPage({
                 <BuySellPanel
                     ticker={asset.ticker}
                     marketPrice={marketPrice}
+                    currency={asset.currency}
                     owned={owned}
                     ownedShares={holding ? holding.shares.toNumber() : 0}
                     cash={portfolio.cashBalance.toNumber()}
+                    cashCurrency={portfolio.baseCurrency}
                 />
             </div>
         </>

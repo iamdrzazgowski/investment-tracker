@@ -8,6 +8,7 @@ export interface YahooSearchResult {
     symbol: string;
     name: string;
     category: 'STOCK' | 'ETF';
+    currency: string;
     exchange: string | null;
     price: number | null;
     dayChangePercent: number | null;
@@ -64,16 +65,20 @@ export async function searchYahooEquities(
 
     if (candidates.length === 0) return [];
 
-    let priceBySymbol = new Map<
+    let dataBySymbol = new Map<
         string,
-        { price: number | null; dayChangePercent: number | null }
+        {
+            price: number | null;
+            dayChangePercent: number | null;
+            currency: string;
+        }
     >();
     try {
         const symbols = candidates.map((c) => c.symbol);
         const quotes = await yahooFinance.quote(symbols);
         const quoteArray = Array.isArray(quotes) ? quotes : [quotes];
 
-        priceBySymbol = new Map(
+        dataBySymbol = new Map(
             quoteArray.map((q) => [
                 q.symbol,
                 {
@@ -85,6 +90,8 @@ export async function searchYahooEquities(
                         typeof q.regularMarketChangePercent === 'number'
                             ? q.regularMarketChangePercent
                             : null,
+                    currency:
+                        typeof q.currency === 'string' ? q.currency : 'USD',
                 },
             ]),
         );
@@ -98,9 +105,10 @@ export async function searchYahooEquities(
             name: c.name,
             category: c.category,
             exchange: c.exchange,
-            price: priceBySymbol.get(c.symbol)?.price ?? null,
+            currency: dataBySymbol.get(c.symbol)?.currency ?? 'USD',
+            price: dataBySymbol.get(c.symbol)?.price ?? null,
             dayChangePercent:
-                priceBySymbol.get(c.symbol)?.dayChangePercent ?? null,
+                dataBySymbol.get(c.symbol)?.dayChangePercent ?? null,
         }),
     );
 }

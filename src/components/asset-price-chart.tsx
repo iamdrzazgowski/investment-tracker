@@ -12,7 +12,7 @@ import {
 import { Card } from '@/components/ui/card';
 import { Delta } from '@/components/delta';
 import type { Range } from '@/lib/data';
-import { fmtEUR } from '@/lib/format';
+import { fmtCurrency } from '@/lib/format';
 import { getAssetHistoryAction } from '@/actions/asset.actions';
 import { RangeTabs } from './range-tabs';
 
@@ -20,11 +20,13 @@ type Point = { i: number; v: number; date: string };
 
 export default function AssetPriceChart({
     ticker,
+    currency,
     initialRange,
     initialData,
     height = 300,
 }: {
     ticker: string;
+    currency: string;
     initialRange: Range;
     initialData: Point[];
     height?: number;
@@ -55,7 +57,7 @@ export default function AssetPriceChart({
             <div className='mb-1.5 flex flex-wrap items-start justify-between gap-3'>
                 <div>
                     <div className='font-mono text-2xl font-bold tracking-tight'>
-                        {fmtEUR(endValue)}
+                        {fmtCurrency(endValue, currency)}
                     </div>
                     <Delta value={changePct} />
                 </div>
@@ -93,14 +95,14 @@ export default function AssetPriceChart({
                         <XAxis dataKey='i' hide />
                         <YAxis hide domain={['dataMin - 1', 'dataMax + 1']} />
                         <Tooltip
-                            cursor={{
-                                stroke: 'var(--border)',
-                                strokeWidth: 1,
-                            }}
+                            cursor={{ stroke: 'var(--border)', strokeWidth: 1 }}
                             content={({ active, payload }) =>
                                 active && payload && payload.length ? (
                                     <div className='rounded-md bg-foreground px-2.5 py-1.5 font-mono text-xs font-semibold text-background'>
-                                        {fmtEUR(payload[0].value as number)}
+                                        {fmtCurrency(
+                                            payload[0].value as number,
+                                            currency,
+                                        )}
                                     </div>
                                 ) : null
                             }
