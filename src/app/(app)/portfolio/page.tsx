@@ -13,7 +13,6 @@ import { INITIAL_CASH, INITIAL_HOLDINGS, type Category } from '@/lib/data';
 export default function PortfolioPage() {
     const [filter, setFilter] = React.useState<Category | 'All'>('All');
 
-    // Temporary portfolio data
     const enriched = INITIAL_HOLDINGS.map((holding) => {
         const value = holding.shares * holding.price;
         const invested = holding.shares * holding.avg;
