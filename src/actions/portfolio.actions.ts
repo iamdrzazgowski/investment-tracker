@@ -1,10 +1,14 @@
 'use server';
 
 import { auth } from '@/lib/auth';
+import { requirePortfolio } from '@/lib/auth-helpers';
+import { prisma } from '@/lib/prisma';
+import { buyAsset, sellAsset } from '@/lib/repositories/holding.repository';
 import {
     addFundsToPortfolio,
     getPortfolioByUserId,
 } from '@/lib/repositories/portfolio.repository';
+import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import z from 'zod';
 
@@ -70,4 +74,34 @@ export async function addFundsAction(balance: number): Promise<AddFundsState> {
             error: 'Failed to add funds',
         };
     }
+}
+
+export async function buyAction(
+    ticker: string,
+    quantity: number,
+    price: number,
+) {
+    const portfolio = await requirePortfolio();
+    const asset = await prisma.asset.findUniqueOrThrow({ where: { ticker } });
+
+    await buyAsset(portfolio.id, asset.id, quantity, price);
+
+    revalidatePath('/');
+    revalidatePath('/portfolio');
+    revalidatePath(`/asset/${ticker}`);
+}
+
+export async function sellAction(
+    ticker: string,
+    quantity: number,
+    price: number,
+) {
+    const portfolio = await requirePortfolio();
+    const asset = await prisma.asset.findUniqueOrThrow({ where: { ticker } });
+
+    await sellAsset(portfolio.id, asset.id, quantity, price);
+
+    revalidatePath('/');
+    revalidatePath('/portfolio');
+    revalidatePath(`/asset/${ticker}`);
 }
