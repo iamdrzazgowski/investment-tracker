@@ -1,6 +1,6 @@
 'use client';
 
-import * as React from 'react';
+import { useState, useTransition } from 'react';
 import {
     Area,
     AreaChart,
@@ -11,25 +11,27 @@ import {
 } from 'recharts';
 import { Card } from '@/components/ui/card';
 import { Delta } from '@/components/delta';
-import { RangeTabs } from './range-tabs';
-import { getAssetHistoryAction } from '@/actions/asset.actions';
-import { fmtEUR } from '@/lib/format';
 import type { Range } from '@/lib/data';
+import { fmtEUR } from '@/lib/format';
+import { getAssetHistoryAction } from '@/actions/asset.actions';
+import { RangeTabs } from './range-tabs';
 
 type Point = { i: number; v: number; date: string };
 
-export function AssetPerformanceChart({
+export default function AssetPriceChart({
     ticker,
     initialRange,
     initialData,
+    height = 300,
 }: {
     ticker: string;
     initialRange: Range;
     initialData: Point[];
+    height?: number;
 }) {
-    const [range, setRange] = React.useState<Range>(initialRange);
-    const [data, setData] = React.useState<Point[]>(initialData);
-    const [isPending, startTransition] = React.useTransition();
+    const [range, setRange] = useState<Range>(initialRange);
+    const [data, setData] = useState<Point[]>(initialData);
+    const [isPending, startTransition] = useTransition();
 
     function handleRangeChange(next: Range) {
         setRange(next);
@@ -46,6 +48,7 @@ export function AssetPerformanceChart({
         : 0;
     const positive = endValue >= startValue;
     const stroke = positive ? 'var(--positive)' : 'var(--destructive)';
+    const gradId = `grad-${ticker}`;
 
     return (
         <Card className='p-5'>
@@ -60,7 +63,7 @@ export function AssetPerformanceChart({
             </div>
             <div
                 style={{
-                    height: 300,
+                    height,
                     opacity: isPending ? 0.5 : 1,
                     transition: 'opacity 150ms',
                 }}>
@@ -70,7 +73,7 @@ export function AssetPerformanceChart({
                         margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                         <defs>
                             <linearGradient
-                                id={`grad-${ticker}`}
+                                id={gradId}
                                 x1='0'
                                 y1='0'
                                 x2='0'
@@ -90,8 +93,12 @@ export function AssetPerformanceChart({
                         <XAxis dataKey='i' hide />
                         <YAxis hide domain={['dataMin - 1', 'dataMax + 1']} />
                         <Tooltip
+                            cursor={{
+                                stroke: 'var(--border)',
+                                strokeWidth: 1,
+                            }}
                             content={({ active, payload }) =>
-                                active && payload?.length ? (
+                                active && payload && payload.length ? (
                                     <div className='rounded-md bg-foreground px-2.5 py-1.5 font-mono text-xs font-semibold text-background'>
                                         {fmtEUR(payload[0].value as number)}
                                     </div>
@@ -103,7 +110,7 @@ export function AssetPerformanceChart({
                             dataKey='v'
                             stroke={stroke}
                             strokeWidth={2}
-                            fill={`url(#grad-${ticker})`}
+                            fill={`url(#${gradId})`}
                         />
                     </AreaChart>
                 </ResponsiveContainer>
