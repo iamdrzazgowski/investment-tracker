@@ -15,6 +15,13 @@ export interface Holding extends AssetMeta {
     avg: number;
 }
 
+export interface EnrichedHolding extends Holding {
+    value: number;
+    invested: number;
+    pl: number;
+    plPct: number;
+}
+
 export interface Transaction {
     id: number;
     date: string;
