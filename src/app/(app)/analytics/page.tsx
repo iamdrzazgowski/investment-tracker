@@ -2,17 +2,15 @@
 
 import { BenchmarkChart } from '@/components/benchmark-chart';
 
-import {
-    CategoryPerformanceChart,
-    HoldingsRanked,
-    MonthlyReturnsChart,
-} from '@/components/analytics-charts';
+import { CategoryPerformanceChart } from '@/components/category-performance-chart';
+import { HoldingsRanked } from '@/components/holdings-ranked';
+import { MonthlyReturnsChart } from '@/components/monthly-returns-chart';
 
 import { Delta } from '@/components/delta';
 import { PageHeader } from '@/components/page-header';
 import { fmtEUR, fmtPct } from '@/lib/format';
 
-import { INITIAL_CASH, INITIAL_HOLDINGS, type Category } from '@/lib/data';
+import { INITIAL_CASH, INITIAL_HOLDINGS, type Category, type EnrichedHolding } from '@/lib/data';
 
 const Stat = ({
     label,
@@ -41,7 +39,7 @@ const Stat = ({
 );
 
 export default function AnalyticsPage() {
-    const enriched = INITIAL_HOLDINGS.map((holding) => {
+    const enriched: EnrichedHolding[] = INITIAL_HOLDINGS.map((holding) => {
         const value = holding.shares * holding.price;
         const invested = holding.shares * holding.avg;
         const pl = value - invested;
