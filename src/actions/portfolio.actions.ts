@@ -81,8 +81,10 @@ export async function buyAction(
     quantity: number,
     price: number,
 ) {
-    const portfolio = await requirePortfolio();
-    const asset = await prisma.asset.findUniqueOrThrow({ where: { ticker } });
+    const [portfolio, asset] = await Promise.all([
+        requirePortfolio(),
+        prisma.asset.findUniqueOrThrow({ where: { ticker } }),
+    ]);
 
     await buyAsset(portfolio.id, asset.id, quantity, price);
 
@@ -96,8 +98,10 @@ export async function sellAction(
     quantity: number,
     price: number,
 ) {
-    const portfolio = await requirePortfolio();
-    const asset = await prisma.asset.findUniqueOrThrow({ where: { ticker } });
+    const [portfolio, asset] = await Promise.all([
+        requirePortfolio(),
+        prisma.asset.findUniqueOrThrow({ where: { ticker } }),
+    ]);
 
     await sellAsset(portfolio.id, asset.id, quantity, price);
 

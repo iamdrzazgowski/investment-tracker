@@ -25,11 +25,19 @@ const tooltipBox = (v: number) => (
 );
 
 export function CategoryPerformanceChart({ enriched }) {
+    const totalsByCategory = new Map<string, { invested: number; pl: number }>();
+    for (const h of enriched) {
+        const entry = totalsByCategory.get(h.cat) ?? { invested: 0, pl: 0 };
+        entry.invested += h.invested;
+        entry.pl += h.pl;
+        totalsByCategory.set(h.cat, entry);
+    }
     const data = (['Stocks', 'ETFs', 'Crypto'] as const).map((cat) => {
-        const rows = enriched.filter((h) => h.cat === cat);
-        const invested = rows.reduce((s, h) => s + h.invested, 0);
-        const pl = rows.reduce((s, h) => s + h.pl, 0);
-        return { cat, plPct: invested ? (pl / invested) * 100 : 0 };
+        const totals = totalsByCategory.get(cat) ?? { invested: 0, pl: 0 };
+        return {
+            cat,
+            plPct: totals.invested ? (totals.pl / totals.invested) * 100 : 0,
+        };
     });
     return (
         <Card>
@@ -149,8 +157,12 @@ export function MonthlyReturnsChart() {
 
 export function HoldingsRanked({ enriched }) {
     const router = useRouter();
-    const sorted = [...enriched].sort((a, b) => b.plPct - a.plPct);
-    const maxAbs = Math.max(...sorted.map((h) => Math.abs(h.plPct)), 1);
+    const sorted = enriched.toSorted((a, b) => b.plPct - a.plPct);
+    let maxAbs = 1;
+    for (const h of sorted) {
+        const abs = Math.abs(h.plPct);
+        if (abs > maxAbs) maxAbs = abs;
+    }
     return (
         <Card>
             <CardHeader>

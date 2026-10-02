@@ -10,7 +10,7 @@ import {
     YAxis,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RangeTabs } from '@/components/performance-chart';
+import { RangeTabs } from '@/components/range-tabs';
 import { genCompareSeries, type Range } from '@/lib/data';
 import { fmtPct } from '@/lib/format';
 

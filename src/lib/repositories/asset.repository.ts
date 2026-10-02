@@ -83,7 +83,7 @@ export async function searchAssets(
         return recent.map(toResult);
     }
 
-    const local = await prisma.asset.findMany({
+    const localPromise = prisma.asset.findMany({
         where: {
             OR: [
                 { ticker: { contains: trimmed, mode: 'insensitive' } },
@@ -92,27 +92,30 @@ export async function searchAssets(
         },
         take: 10,
     });
+    const yahooPromise = searchYahooEquities(trimmed).catch((err) => {
+        console.error('Yahoo search failed:', err);
+        return [];
+    });
+
+    const [local, yahooResults] = await Promise.all([
+        localPromise,
+        yahooPromise,
+    ]);
     const localTickers = new Set(local.map((a) => a.ticker));
 
-    let external: AssetSearchResult[] = [];
-    try {
-        const yahooResults = await searchYahooEquities(trimmed);
-        external = yahooResults
-            .filter((r) => !localTickers.has(r.symbol))
-            .map((r) => ({
-                t: r.symbol,
-                name: r.name,
-                cat:
-                    r.category === 'ETF'
-                        ? ('ETFs' as const)
-                        : ('Stocks' as const),
-                currency: r.currency,
-                price: r.price,
-                day: r.dayChangePercent ?? 0,
-            }));
-    } catch (err) {
-        console.error('Yahoo search failed:', err);
-    }
+    const external: AssetSearchResult[] = yahooResults
+        .filter((r) => !localTickers.has(r.symbol))
+        .map((r) => ({
+            t: r.symbol,
+            name: r.name,
+            cat:
+                r.category === 'ETF'
+                    ? ('ETFs' as const)
+                    : ('Stocks' as const),
+            currency: r.currency,
+            price: r.price,
+            day: r.dayChangePercent ?? 0,
+        }));
 
     return [...local.map(toResult), ...external].slice(0, 20);
 }
@@ -168,30 +171,32 @@ export async function syncAllAssetPrices(): Promise<SyncResult[]> {
         }));
     }
 
-    const results: SyncResult[] = [];
-    for (const asset of assets) {
-        const quote = quoteBySymbol.get(asset.ticker);
-        if (!quote) {
-            results.push({
-                ticker: asset.ticker,
-                status: 'error',
-                message: 'No quote returned by Yahoo',
-            });
-            continue;
-        }
+    const results: SyncResult[] = await Promise.all(
+        assets.map(async (asset) => {
+            const quote = quoteBySymbol.get(asset.ticker);
+            if (!quote) {
+                return {
+                    ticker: asset.ticker,
+                    status: 'error' as const,
+                    message: 'No quote returned by Yahoo',
+                };
+            }
 
-        await prisma.asset.update({
-            where: { id: asset.id },
-            data: {
-                lastPrice: quote.price,
-                lastPriceAt: new Date(),
-                dayChangePercent: quote.dayChangePercent,
-            },
-        });
-        await prisma.priceSnapshot.create({
-            data: { assetId: asset.id, price: quote.price },
-        });
-        results.push({ ticker: asset.ticker, status: 'ok' });
-    }
+            await Promise.all([
+                prisma.asset.update({
+                    where: { id: asset.id },
+                    data: {
+                        lastPrice: quote.price,
+                        lastPriceAt: new Date(),
+                        dayChangePercent: quote.dayChangePercent,
+                    },
+                }),
+                prisma.priceSnapshot.create({
+                    data: { assetId: asset.id, price: quote.price },
+                }),
+            ]);
+            return { ticker: asset.ticker, status: 'ok' as const };
+        }),
+    );
     return results;
 }

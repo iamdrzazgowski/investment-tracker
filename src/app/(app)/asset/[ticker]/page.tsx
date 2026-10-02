@@ -31,10 +31,13 @@ export default async function AssetDetailPage({
         notFound();
     }
 
-    const portfolio = await requirePortfolio();
+    const portfolioPromise = requirePortfolio();
+    const historyPromise = getAssetPriceHistory(asset, DEFAULT_RANGE);
+    const [portfolio, initialPoints] = await Promise.all([
+        portfolioPromise,
+        historyPromise,
+    ]);
     const holding = await getHoldingForAsset(portfolio.id, asset.id);
-
-    const initialPoints = await getAssetPriceHistory(asset, DEFAULT_RANGE);
     const initialData = initialPoints.map((p, i) => ({
         i,
         v: p.price,
@@ -47,6 +50,12 @@ export default async function AssetDetailPage({
         ? Number(asset.dayChangePercent)
         : 0;
     const cat = asset.category === 'ETF' ? 'ETFs' : 'Stocks';
+    const holdingShares = holding ? holding.shares.toNumber() : 0;
+    const holdingAvgCost = holding ? holding.avgCost.toNumber() : 0;
+    const holdingInvested = holdingShares * holdingAvgCost;
+    const holdingValue = holdingShares * marketPrice;
+    const holdingPL = holdingValue - holdingInvested;
+    const holdingPLPct = holdingInvested ? (holdingPL / holdingInvested) * 100 : 0;
 
     return (
         <>
@@ -91,67 +100,54 @@ export default async function AssetDetailPage({
                     </CardHeader>
                     <CardContent className='pt-0'>
                         {owned && holding ? (
-                            (() => {
-                                const shares = holding.shares.toNumber();
-                                const avgCost = holding.avgCost.toNumber();
-                                const invested = shares * avgCost;
-                                const value = shares * marketPrice;
-                                const pl = value - invested;
-                                const plPct = invested
-                                    ? (pl / invested) * 100
-                                    : 0;
-
-                                return (
-                                    <ul className='divide-y divide-border text-[13px]'>
-                                        <li className='flex items-center justify-between py-2.5 first:pt-0'>
-                                            <span className='text-muted-foreground'>
-                                                Shares
-                                            </span>
-                                            <span className='font-mono'>
-                                                {fmtNum(shares, 0)}
-                                            </span>
-                                        </li>
-                                        <li className='flex items-center justify-between py-2.5'>
-                                            <span className='text-muted-foreground'>
-                                                Average purchase price
-                                            </span>
-                                            <span className='font-mono'>
-                                                {fmtEUR(avgCost)}
-                                            </span>
-                                        </li>
-                                        <li className='flex items-center justify-between py-2.5'>
-                                            <span className='text-muted-foreground'>
-                                                Total invested
-                                            </span>
-                                            <span className='font-mono'>
-                                                {fmtEUR(invested)}
-                                            </span>
-                                        </li>
-                                        <li className='flex items-center justify-between py-2.5'>
-                                            <span className='text-muted-foreground'>
-                                                Current value
-                                            </span>
-                                            <span className='font-mono'>
-                                                {fmtEUR(value)}
-                                            </span>
-                                        </li>
-                                        <li className='flex items-center justify-between py-2.5'>
-                                            <span className='text-muted-foreground'>
-                                                Total return
-                                            </span>
-                                            <Delta value={plPct} size='sm' />
-                                        </li>
-                                        <li className='flex items-center justify-between py-2.5 last:pb-0'>
-                                            <span className='text-muted-foreground'>
-                                                Unrealized P/L
-                                            </span>
-                                            <span className='font-mono'>
-                                                {fmtSigned(pl)}
-                                            </span>
-                                        </li>
-                                    </ul>
-                                );
-                            })()
+                            <ul className='divide-y divide-border text-[13px]'>
+                                <li className='flex items-center justify-between py-2.5 first:pt-0'>
+                                    <span className='text-muted-foreground'>
+                                        Shares
+                                    </span>
+                                    <span className='font-mono'>
+                                        {fmtNum(holdingShares, 0)}
+                                    </span>
+                                </li>
+                                <li className='flex items-center justify-between py-2.5'>
+                                    <span className='text-muted-foreground'>
+                                        Average purchase price
+                                    </span>
+                                    <span className='font-mono'>
+                                        {fmtEUR(holdingAvgCost)}
+                                    </span>
+                                </li>
+                                <li className='flex items-center justify-between py-2.5'>
+                                    <span className='text-muted-foreground'>
+                                        Total invested
+                                    </span>
+                                    <span className='font-mono'>
+                                        {fmtEUR(holdingInvested)}
+                                    </span>
+                                </li>
+                                <li className='flex items-center justify-between py-2.5'>
+                                    <span className='text-muted-foreground'>
+                                        Current value
+                                    </span>
+                                    <span className='font-mono'>
+                                        {fmtEUR(holdingValue)}
+                                    </span>
+                                </li>
+                                <li className='flex items-center justify-between py-2.5'>
+                                    <span className='text-muted-foreground'>
+                                        Total return
+                                    </span>
+                                    <Delta value={holdingPLPct} size='sm' />
+                                </li>
+                                <li className='flex items-center justify-between py-2.5 last:pb-0'>
+                                    <span className='text-muted-foreground'>
+                                        Unrealized P/L
+                                    </span>
+                                    <span className='font-mono'>
+                                        {fmtSigned(holdingPL)}
+                                    </span>
+                                </li>
+                            </ul>
                         ) : (
                             <ul className='divide-y divide-border text-[13px]'>
                                 <li className='flex items-center justify-between py-2.5 first:pt-0'>

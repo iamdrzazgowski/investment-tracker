@@ -48,9 +48,15 @@ const TOP_MOVERS = [
 
 type TopMover = (typeof TOP_MOVERS)[number];
 
-function Col({ title, rows }: { title: string; rows: TopMover[] }) {
-    const router = useRouter();
-
+function Col({
+    title,
+    rows,
+    onSelect,
+}: {
+    title: string;
+    rows: TopMover[];
+    onSelect: (ticker: string) => void;
+}) {
     return (
         <div>
             <div className='mb-2 text-[11.5px] font-semibold uppercase tracking-wide text-muted-foreground'>
@@ -62,7 +68,7 @@ function Col({ title, rows }: { title: string; rows: TopMover[] }) {
                     <li
                         key={h.t}
                         className='flex cursor-pointer items-center justify-between py-2 first:pt-0 last:pb-0'
-                        onClick={() => router.push(`/asset/${h.t}`)}>
+                        onClick={() => onSelect(h.t)}>
                         <div className='flex items-center gap-2.5'>
                             <AvatarBadge t={h.t} cat={h.cat} />
 
@@ -86,7 +92,8 @@ function Col({ title, rows }: { title: string; rows: TopMover[] }) {
 }
 
 export function TopMovers() {
-    const sorted = [...TOP_MOVERS].sort((a, b) => b.day - a.day);
+    const router = useRouter();
+    const sorted = TOP_MOVERS.toSorted((a, b) => b.day - a.day);
 
     const gainers = sorted.slice(0, 3);
     const losers = sorted.slice(-3).reverse();
@@ -98,8 +105,16 @@ export function TopMovers() {
             </CardHeader>
 
             <CardContent className='grid grid-cols-2 gap-5 pt-0'>
-                <Col title='Gainers' rows={gainers} />
-                <Col title='Losers' rows={losers} />
+                <Col
+                    title='Gainers'
+                    rows={gainers}
+                    onSelect={(t) => router.push(`/asset/${t}`)}
+                />
+                <Col
+                    title='Losers'
+                    rows={losers}
+                    onSelect={(t) => router.push(`/asset/${t}`)}
+                />
             </CardContent>
         </Card>
     );

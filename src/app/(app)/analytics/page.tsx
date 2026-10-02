@@ -56,17 +56,28 @@ export default function AnalyticsPage() {
         };
     });
 
-    const holdingsValue = enriched.reduce(
-        (sum, holding) => sum + holding.value,
-        0,
-    );
+    let holdingsValue = 0;
+    let totalInvested = 0;
+    let inProfit = 0;
+    let best: (typeof enriched)[number] | null = null;
+    let worst: (typeof enriched)[number] | null = null;
+    let largest: (typeof enriched)[number] | null = null;
+    const valueByCategory = new Map<Category, number>();
+
+    for (const holding of enriched) {
+        holdingsValue += holding.value;
+        totalInvested += holding.invested;
+        if (holding.pl >= 0) inProfit += 1;
+        if (!best || holding.plPct > best.plPct) best = holding;
+        if (!worst || holding.plPct < worst.plPct) worst = holding;
+        if (!largest || holding.value > largest.value) largest = holding;
+        valueByCategory.set(
+            holding.cat,
+            (valueByCategory.get(holding.cat) ?? 0) + holding.value,
+        );
+    }
 
     const totalValue = holdingsValue + INITIAL_CASH;
-
-    const totalInvested = enriched.reduce(
-        (sum, holding) => sum + holding.invested,
-        0,
-    );
 
     const totalPL = holdingsValue - totalInvested;
 
@@ -85,9 +96,7 @@ export default function AnalyticsPage() {
             const value =
                 category === 'Cash'
                     ? INITIAL_CASH
-                    : enriched
-                          .filter((holding) => holding.cat === category)
-                          .reduce((sum, holding) => sum + holding.value, 0);
+                    : (valueByCategory.get(category) ?? 0);
 
             return {
                 category,
@@ -97,25 +106,11 @@ export default function AnalyticsPage() {
         },
     );
 
-    const best = enriched.length
-        ? [...enriched].sort((a, b) => b.plPct - a.plPct)[0]
-        : null;
-
-    const worst = enriched.length
-        ? [...enriched].sort((a, b) => a.plPct - b.plPct)[0]
-        : null;
-
     const diversification = allocation.filter((a) => a.value > 0).length;
-
-    const largest = enriched.length
-        ? [...enriched].sort((a, b) => b.value - a.value)[0]
-        : null;
 
     const largestPct = largest ? (largest.value / totals.totalValue) * 100 : 0;
 
     const cashRatio = (totals.cash / totals.totalValue) * 100;
-
-    const inProfit = enriched.filter((h) => h.pl >= 0).length;
 
     const winRate = enriched.length ? (inProfit / enriched.length) * 100 : 0;
 
