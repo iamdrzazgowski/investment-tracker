@@ -10,7 +10,7 @@ import {
     YAxis,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RangeTabs } from '@/components/range-tabs';
+import { RangeTabs } from '@/components/shared/range-tabs';
 import { genCompareSeries, type Range } from '@/lib/data';
 import { fmtPct } from '@/lib/format';
 
@@ -66,13 +66,21 @@ export function BenchmarkChart({ seed }: { seed: number }) {
                                         <div className='rounded-md bg-foreground px-2.5 py-1.5 text-xs font-semibold text-background'>
                                             Portfolio{' '}
                                             {fmtPct(
-                                                (payload[0].payload as any)
-                                                    .portfolio - 100,
+                                                (
+                                                    payload[0].payload as {
+                                                        portfolio: number;
+                                                        benchmark: number;
+                                                    }
+                                                ).portfolio - 100,
                                             )}{' '}
                                             · Benchmark{' '}
                                             {fmtPct(
-                                                (payload[0].payload as any)
-                                                    .benchmark - 100,
+                                                (
+                                                    payload[0].payload as {
+                                                        portfolio: number;
+                                                        benchmark: number;
+                                                    }
+                                                ).benchmark - 100,
                                             )}
                                         </div>
                                     ) : null

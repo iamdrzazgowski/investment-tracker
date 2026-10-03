@@ -15,8 +15,8 @@ import {
 
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { AvatarBadge } from '@/components/avatar-badge';
-import { PageHeader } from '@/components/page-header';
+import { AvatarBadge } from '@/components/shared/avatar-badge';
+import { PageHeader } from '@/components/shared/page-header';
 
 import { CATALOG, INITIAL_TRANSACTIONS } from '@/lib/data';
 import { fmtEUR, fmtNum } from '@/lib/format';

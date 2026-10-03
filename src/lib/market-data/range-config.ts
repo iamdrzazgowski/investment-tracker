@@ -1,4 +1,4 @@
-import type { Range } from '@/lib/data';
+import type { Range } from './range';
 
 type YahooInterval =
     | '1m'

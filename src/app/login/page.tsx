@@ -1,9 +1,7 @@
 'use client';
 
-import Link from 'next/link';
-import { LoginForm } from '@/components/login-form';
+import { LoginForm } from '@/features/auth/components/login-form';
 import Showcase from '@/components/ui/showcase';
-import { NordwellLogo } from '@/components/nordwell-logo';
 
 export default function LoginPage() {
     return (

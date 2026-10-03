@@ -1,10 +1,10 @@
-import { AddFundsDialog } from '@/components/add-funds-dialog';
-import { AllocationDonut } from '@/components/allocation-donut';
-import { Delta } from '@/components/delta';
-import { PageHeader } from '@/components/page-header';
-import { PerformanceChart } from '@/components/performance-chart';
-import { StatRow } from '@/components/stat-row';
-import { TopMovers } from '@/components/top-movers';
+import { AddFundsDialog } from '@/features/portfolio/components/add-funds-dialog';
+import { AllocationDonut } from '@/features/portfolio/components/allocation-donut';
+import { Delta } from '@/components/shared/delta';
+import { PageHeader } from '@/components/shared/page-header';
+import { PerformanceChart } from '@/features/portfolio/components/performance-chart';
+import { StatRow } from '@/features/portfolio/components/stat-row';
+import { TopMovers } from '@/features/portfolio/components/top-movers';
 import { fmtEUR, fmtSigned } from '@/lib/format';
 
 export default function DashboardPage() {

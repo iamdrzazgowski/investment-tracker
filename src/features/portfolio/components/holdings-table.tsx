@@ -10,11 +10,18 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { AvatarBadge } from '@/components/avatar-badge';
-import { Delta } from '@/components/delta';
+import { AvatarBadge } from '@/components/shared/avatar-badge';
+import { Delta } from '@/components/shared/delta';
 import { fmtEUR, fmtNum, fmtSigned } from '@/lib/format';
+import type { EnrichedHolding } from '@/lib/data';
 
-export function HoldingsTable({ rows, title = 'Holdings' }) {
+export function HoldingsTable({
+    rows,
+    title = 'Holdings',
+}: {
+    rows: EnrichedHolding[];
+    title?: string;
+}) {
     const router = useRouter();
     return (
         <Card>

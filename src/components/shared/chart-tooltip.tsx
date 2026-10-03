@@ -1,5 +1,3 @@
-'use client';
-
 import { fmtPct } from '@/lib/format';
 
 export function ChartTooltipValue({ value }: { value: number }) {

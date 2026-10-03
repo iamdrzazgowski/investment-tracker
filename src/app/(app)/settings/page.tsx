@@ -1,6 +1,6 @@
 import { ChevronDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { PageHeader } from '@/components/page-header';
+import { PageHeader } from '@/components/shared/page-header';
 
 const ROWS = [
     { label: 'Display currency', value: 'EUR (€)' },

@@ -1,3 +1,4 @@
+import 'server-only';
 import { prisma } from '@/lib/prisma';
 import {
     fetchYahooHistory,
@@ -8,7 +9,7 @@ import {
 import type { AssetModel as Asset } from '../../../generated/prisma/models';
 import type { AssetCategory } from '../../../generated/prisma/enums';
 import { unstable_cache } from 'next/cache';
-import { Range } from '@/lib/data';
+import type { Range } from '@/lib/market-data/range';
 import { RANGE_REVALIDATE_SECONDS } from '../market-data/range-config';
 
 const STALE_AFTER_MS = 5 * 60 * 1000;
@@ -38,6 +39,10 @@ function toResult(a: {
         price: a.lastPrice != null ? Number(a.lastPrice) : null,
         day: a.dayChangePercent ? Number(a.dayChangePercent) : 0,
     };
+}
+
+export function getAssetByTicker(ticker: string) {
+    return prisma.asset.findUniqueOrThrow({ where: { ticker } });
 }
 
 export async function getOrCreateAsset(ticker: string): Promise<Asset> {

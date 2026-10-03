@@ -343,8 +343,9 @@ export function mulberry32(seed: number) {
     };
 }
 
-export const RANGES = ['1D', '1W', '1M', '3M', '1Y', 'All'] as const;
-export type Range = (typeof RANGES)[number];
+import type { Range } from './market-data/range';
+export type { Range } from './market-data/range';
+export { RANGES } from './market-data/range';
 export const RANGE_POINTS: Record<Range, number> = {
     '1D': 24,
     '1W': 7,

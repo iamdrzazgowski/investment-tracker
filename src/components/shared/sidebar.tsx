@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { NAV } from '@/components/nav-items';
+import { NAV } from '@/components/shared/nav-items';
 // import { SearchTrigger } from "@/components/global-search";
 import { cn } from '@/lib/utils';
-import { NordwellLogo } from './nordwell-logo';
+import { NordwellLogo } from '@/components/shared/nordwell-logo';
 
 export function Sidebar() {
     const pathname = usePathname();

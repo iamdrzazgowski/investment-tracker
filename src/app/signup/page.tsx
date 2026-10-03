@@ -1,8 +1,7 @@
 'use client';
 
-import { SignupForm } from '@/components/signup-form';
+import { SignupForm } from '@/features/auth/components/signup-form';
 import Showcase from '@/components/ui/showcase';
-import Link from 'next/link';
 
 export default function SignupPage() {
     return (

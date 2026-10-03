@@ -12,7 +12,7 @@ import {
     YAxis,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartTooltipValue } from '@/components/chart-tooltip';
+import { ChartTooltipValue } from '@/components/shared/chart-tooltip';
 import { mulberry32 } from '@/lib/data';
 
 export function MonthlyReturnsChart() {

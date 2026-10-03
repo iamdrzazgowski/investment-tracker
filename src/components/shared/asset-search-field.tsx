@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { Loader2, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { AvatarBadge } from '@/components/avatar-badge';
+import { AvatarBadge } from '@/components/shared/avatar-badge';
 import type { AssetSearchResult } from '@/lib/repositories/asset.repository';
 import { fmtCurrency } from '@/lib/format';
 
