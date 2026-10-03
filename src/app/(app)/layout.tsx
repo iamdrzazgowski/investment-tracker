@@ -1,5 +1,5 @@
-import { MobileHeader } from '@/components/mobile-header';
-import { Sidebar } from '@/components/sidebar';
+import { MobileHeader } from '@/components/shared/mobile-header';
+import { Sidebar } from '@/components/shared/sidebar';
 
 export default function AppLayout({ children }: LayoutProps<'/'>) {
     return (

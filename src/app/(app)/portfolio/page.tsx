@@ -3,10 +3,10 @@
 import * as React from 'react';
 
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CategoryBreakdown } from '@/components/category-breakdown';
-import { HoldingsTable } from '@/components/holdings-table';
-import { NewOrderDialog } from '@/components/new-order-dialog';
-import { PageHeader } from '@/components/page-header';
+import { CategoryBreakdown } from '@/features/portfolio/components/category-breakdown';
+import { HoldingsTable } from '@/features/portfolio/components/holdings-table';
+import { NewOrderDialog } from '@/features/portfolio/components/new-order-dialog';
+import { PageHeader } from '@/components/shared/page-header';
 
 import { INITIAL_CASH, INITIAL_HOLDINGS, type Category } from '@/lib/data';
 

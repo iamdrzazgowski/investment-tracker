@@ -1,5 +1,5 @@
 import React from 'react';
-import { NordwellLogo } from '../nordwell-logo';
+import { NordwellLogo } from '../shared/nordwell-logo';
 import Link from 'next/link';
 
 export default function Showcase() {

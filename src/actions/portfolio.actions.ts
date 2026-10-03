@@ -1,47 +1,21 @@
 'use server';
 
-import { auth } from '@/lib/auth';
 import { requirePortfolio } from '@/lib/auth-helpers';
-import { prisma } from '@/lib/prisma';
+import { getAssetByTicker } from '@/lib/repositories/asset.repository';
 import { buyAsset, sellAsset } from '@/lib/repositories/holding.repository';
+import { addFundsToPortfolio } from '@/lib/repositories/portfolio.repository';
 import {
-    addFundsToPortfolio,
-    getPortfolioByUserId,
-} from '@/lib/repositories/portfolio.repository';
+    addFundsSchema,
+    tradeSchema,
+} from '@/lib/validations/portfolio';
 import { revalidatePath } from 'next/cache';
-import { headers } from 'next/headers';
-import z from 'zod';
 
 type AddFundsState = {
     success: boolean;
     error?: string;
 };
 
-const addFundsSchema = z.object({
-    balance: z
-        .number({
-            error: 'Amount must be a number',
-        })
-        .positive('Amount must be greater than 0')
-        .finite('Amount must be a valid number')
-        .refine(
-            (value) => Number.isInteger(value * 100),
-            'Amount can have at most 2 decimal places',
-        ),
-});
-
 export async function addFundsAction(balance: number): Promise<AddFundsState> {
-    const session = await auth.api.getSession({
-        headers: await headers(),
-    });
-
-    if (!session) {
-        return {
-            success: false,
-            error: 'Unauthorized',
-        };
-    }
-
     const result = addFundsSchema.safeParse({ balance });
 
     if (!result.success) {
@@ -51,17 +25,19 @@ export async function addFundsAction(balance: number): Promise<AddFundsState> {
         };
     }
 
-    const portfolio = await getPortfolioByUserId(session.user.id);
-
-    if (!portfolio) {
+    let portfolioId: string;
+    try {
+        const portfolio = await requirePortfolio();
+        portfolioId = portfolio.id;
+    } catch {
         return {
             success: false,
-            error: 'Portfolio not found',
+            error: 'Unauthorized',
         };
     }
 
     try {
-        await addFundsToPortfolio(portfolio.id, result.data.balance);
+        await addFundsToPortfolio(portfolioId, result.data.balance);
 
         return {
             success: true,
@@ -81,16 +57,21 @@ export async function buyAction(
     quantity: number,
     price: number,
 ) {
+    const parsed = tradeSchema.safeParse({ ticker, quantity, price });
+    if (!parsed.success) {
+        throw new Error(parsed.error.issues[0]?.message ?? 'Invalid trade');
+    }
+
     const [portfolio, asset] = await Promise.all([
         requirePortfolio(),
-        prisma.asset.findUniqueOrThrow({ where: { ticker } }),
+        getAssetByTicker(parsed.data.ticker),
     ]);
 
-    await buyAsset(portfolio.id, asset.id, quantity, price);
+    await buyAsset(portfolio.id, asset.id, parsed.data.quantity, parsed.data.price);
 
     revalidatePath('/');
     revalidatePath('/portfolio');
-    revalidatePath(`/asset/${ticker}`);
+    revalidatePath(`/asset/${parsed.data.ticker}`);
 }
 
 export async function sellAction(
@@ -98,14 +79,24 @@ export async function sellAction(
     quantity: number,
     price: number,
 ) {
+    const parsed = tradeSchema.safeParse({ ticker, quantity, price });
+    if (!parsed.success) {
+        throw new Error(parsed.error.issues[0]?.message ?? 'Invalid trade');
+    }
+
     const [portfolio, asset] = await Promise.all([
         requirePortfolio(),
-        prisma.asset.findUniqueOrThrow({ where: { ticker } }),
+        getAssetByTicker(parsed.data.ticker),
     ]);
 
-    await sellAsset(portfolio.id, asset.id, quantity, price);
+    await sellAsset(
+        portfolio.id,
+        asset.id,
+        parsed.data.quantity,
+        parsed.data.price,
+    );
 
     revalidatePath('/');
     revalidatePath('/portfolio');
-    revalidatePath(`/asset/${ticker}`);
+    revalidatePath(`/asset/${parsed.data.ticker}`);
 }

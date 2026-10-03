@@ -10,11 +10,11 @@ import {
     YAxis,
 } from 'recharts';
 import { Card } from '@/components/ui/card';
-import { Delta } from '@/components/delta';
-import type { Range } from '@/lib/data';
+import { Delta } from '@/components/shared/delta';
+import type { Range } from '@/lib/market-data/range';
 import { fmtCurrency } from '@/lib/format';
 import { getAssetHistoryAction } from '@/actions/asset.actions';
-import { RangeTabs } from './range-tabs';
+import { RangeTabs } from '@/components/shared/range-tabs';
 
 type Point = { i: number; v: number; date: string };
 

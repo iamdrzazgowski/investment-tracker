@@ -1,7 +1,8 @@
-import { Delta } from '@/components/delta';
+import { Delta } from '@/components/shared/delta';
 import { fmtEUR, fmtPct, fmtSigned } from '@/lib/format';
 
-export function StatRow({ totals }: { totals: any }) {
+export function StatRow({ totals: _totals }: { totals?: unknown }) {
+    void _totals;
     const stats = [
         { label: 'Total invested', value: fmtEUR(4000) },
         {

@@ -1,19 +1,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Delta } from '@/components/delta';
-import { CATEGORY_COLORS, type Category } from '@/lib/data';
+import { Delta } from '@/components/shared/delta';
+import { CATEGORY_COLORS, type Category, type EnrichedHolding } from '@/lib/data';
 import { fmtEUR } from '@/lib/format';
 
-export function CategoryBreakdown({ enriched, cash, totalValue }) {
+export function CategoryBreakdown({
+    enriched,
+    cash,
+    totalValue,
+}: {
+    enriched: EnrichedHolding[];
+    cash: number;
+    totalValue: number;
+}) {
     const cats = (['Stocks', 'ETFs', 'Crypto', 'Cash'] as Category[]).map(
         (cat) => {
             const rows =
                 cat === 'Cash' ? [] : enriched.filter((h) => h.cat === cat);
             const value =
-                cat === 'Cash' ? cash : rows.reduce((s, h) => s + h.value, 0);
+                cat === 'Cash'
+                    ? cash
+                    : rows.reduce((s: number, h) => s + h.value, 0);
             const invested =
                 cat === 'Cash'
                     ? cash
-                    : rows.reduce((s, h) => s + h.invested, 0);
+                    : rows.reduce((s: number, h) => s + h.invested, 0);
             const pl = value - invested;
             const plPct = invested ? (pl / invested) * 100 : 0;
             return {

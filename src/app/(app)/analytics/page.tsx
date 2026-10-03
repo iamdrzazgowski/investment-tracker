@@ -1,13 +1,13 @@
 'use client';
 
-import { BenchmarkChart } from '@/components/benchmark-chart';
+import { BenchmarkChart } from '@/features/analytics/components/benchmark-chart';
 
-import { CategoryPerformanceChart } from '@/components/category-performance-chart';
-import { HoldingsRanked } from '@/components/holdings-ranked';
-import { MonthlyReturnsChart } from '@/components/monthly-returns-chart';
+import { CategoryPerformanceChart } from '@/features/analytics/components/category-performance-chart';
+import { HoldingsRanked } from '@/features/analytics/components/holdings-ranked';
+import { MonthlyReturnsChart } from '@/features/analytics/components/monthly-returns-chart';
 
-import { Delta } from '@/components/delta';
-import { PageHeader } from '@/components/page-header';
+import { Delta } from '@/components/shared/delta';
+import { PageHeader } from '@/components/shared/page-header';
 import { fmtEUR, fmtPct } from '@/lib/format';
 
 import { INITIAL_CASH, INITIAL_HOLDINGS, type Category, type EnrichedHolding } from '@/lib/data';

@@ -1,6 +1,7 @@
+import 'server-only';
 import YahooFinance from 'yahoo-finance2';
 import { RANGE_TO_YAHOO } from './range-config';
-import { Range } from '@/lib/data';
+import type { Range } from './range';
 
 export const yahooFinance = new YahooFinance();
 

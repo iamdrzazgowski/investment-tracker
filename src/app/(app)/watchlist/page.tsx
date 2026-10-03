@@ -16,11 +16,11 @@ import {
     TableRow,
 } from '@/components/ui/table';
 
-import { AddWatchlistDialog } from '@/components/add-watchlist-dialog';
-import { AvatarBadge } from '@/components/avatar-badge';
-import { Delta } from '@/components/delta';
-import { PageHeader } from '@/components/page-header';
-import { Sparkline } from '@/components/sparkline';
+import { AddWatchlistDialog } from '@/features/watchlist/components/add-watchlist-dialog';
+import { AvatarBadge } from '@/components/shared/avatar-badge';
+import { Delta } from '@/components/shared/delta';
+import { PageHeader } from '@/components/shared/page-header';
+import { Sparkline } from '@/features/watchlist/components/sparkline';
 
 import { AssetMeta, INITIAL_WATCHLIST } from '@/lib/data';
 import { fmtEUR } from '@/lib/format';

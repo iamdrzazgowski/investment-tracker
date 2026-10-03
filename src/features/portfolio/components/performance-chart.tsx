@@ -10,10 +10,10 @@ import {
     YAxis,
 } from 'recharts';
 import { Card } from '@/components/ui/card';
-import { Delta } from '@/components/delta';
+import { Delta } from '@/components/shared/delta';
 import { genSeries, RANGE_CHANGE, type Range } from '@/lib/data';
 import { fmtEUR } from '@/lib/format';
-import { RangeTabs } from './range-tabs';
+import { RangeTabs } from '@/components/shared/range-tabs';
 
 export function PerformanceChart({
     seed,

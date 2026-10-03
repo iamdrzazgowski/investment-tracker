@@ -1,4 +1,4 @@
-import { RANGES, Range } from '@/lib/data';
+import { RANGES, type Range } from '@/lib/market-data/range';
 import { cn } from '@/lib/utils';
 
 export function RangeTabs({

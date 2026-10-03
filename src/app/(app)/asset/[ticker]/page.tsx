@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import { BuySellPanel } from '@/components/buy-sell-panel';
-import { AvatarBadge } from '@/components/avatar-badge';
-import { Delta } from '@/components/delta';
+import { BuySellPanel } from '@/features/asset/components/buy-sell-panel';
+import { AvatarBadge } from '@/components/shared/avatar-badge';
+import { Delta } from '@/components/shared/delta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { fmtEUR, fmtNum, fmtSigned } from '@/lib/format';
 import { requirePortfolio } from '@/lib/auth-helpers';
@@ -12,7 +12,7 @@ import {
     getOrCreateAsset,
     getAssetPriceHistory,
 } from '@/lib/repositories/asset.repository';
-import AssetPriceChart from '@/components/asset-price-chart';
+import AssetPriceChart from '@/features/asset/components/asset-price-chart';
 
 const DEFAULT_RANGE = '1M' as const;
 

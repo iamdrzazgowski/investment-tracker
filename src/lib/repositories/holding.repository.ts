@@ -1,3 +1,4 @@
+import 'server-only';
 import { prisma } from '@/lib/prisma';
 
 export function getHoldingForAsset(portfolioId: string, assetId: string) {
@@ -12,7 +13,22 @@ export async function buyAsset(
     quantity: number,
     price: number,
 ) {
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+        throw new Error('Quantity must be greater than 0');
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+        throw new Error('Price must be greater than 0');
+    }
+
     return prisma.$transaction(async (tx) => {
+        const portfolio = await tx.portfolio.findUniqueOrThrow({
+            where: { id: portfolioId },
+        });
+        const cost = quantity * price;
+        if (portfolio.cashBalance.toNumber() < cost) {
+            throw new Error('Insufficient funds');
+        }
+
         const existing = await tx.holding.findUnique({
             where: { portfolioId_assetId: { portfolioId, assetId } },
         });
@@ -56,6 +72,13 @@ export async function sellAsset(
     quantity: number,
     price: number,
 ) {
+    if (!Number.isFinite(quantity) || quantity <= 0) {
+        throw new Error('Quantity must be greater than 0');
+    }
+    if (!Number.isFinite(price) || price <= 0) {
+        throw new Error('Price must be greater than 0');
+    }
+
     return prisma.$transaction(async (tx) => {
         const existing = await tx.holding.findUniqueOrThrow({
             where: { portfolioId_assetId: { portfolioId, assetId } },

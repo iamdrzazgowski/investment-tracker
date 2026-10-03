@@ -2,7 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { getAssetPriceHistory } from '@/lib/repositories/asset.repository';
-import type { Range } from '@/lib/data';
+import type { Range } from '@/lib/market-data/range';
 
 export async function getAssetHistoryAction(ticker: string, range: Range) {
     const asset = await prisma.asset.findUniqueOrThrow({ where: { ticker } });

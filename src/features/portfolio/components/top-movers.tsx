@@ -3,8 +3,8 @@
 import { useRouter } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AvatarBadge } from '@/components/avatar-badge';
-import { Delta } from '@/components/delta';
+import { AvatarBadge } from '@/components/shared/avatar-badge';
+import { Delta } from '@/components/shared/delta';
 import { fmtEUR } from '@/lib/format';
 
 const TOP_MOVERS = [
