@@ -1,3 +1,4 @@
+import { AppShell } from '@/components/shared/app-shell';
 import { AddFundsDialog } from '@/features/portfolio/components/add-funds-dialog';
 import { AllocationDonut } from '@/features/portfolio/components/allocation-donut';
 import { Delta } from '@/components/shared/delta';
@@ -9,7 +10,7 @@ import { fmtEUR, fmtSigned } from '@/lib/format';
 
 export default function DashboardPage() {
     return (
-        <>
+        <AppShell>
             <PageHeader
                 eyebrow='Overview'
                 title='Dashboard'
@@ -37,6 +38,6 @@ export default function DashboardPage() {
                 <TopMovers />
                 <AllocationDonut />
             </div>
-        </>
+        </AppShell>
     );
 }

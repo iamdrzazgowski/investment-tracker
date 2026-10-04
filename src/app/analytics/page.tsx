@@ -1,5 +1,6 @@
 'use client';
 
+import { AppShell } from '@/components/shared/app-shell';
 import { BenchmarkChart } from '@/features/analytics/components/benchmark-chart';
 
 import { CategoryPerformanceChart } from '@/features/analytics/components/category-performance-chart';
@@ -113,7 +114,7 @@ export default function AnalyticsPage() {
     const winRate = enriched.length ? (inProfit / enriched.length) * 100 : 0;
 
     return (
-        <>
+        <AppShell>
             <PageHeader eyebrow='Insights' title='Analytics' />
 
             <div className='mb-1 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4'>
@@ -169,6 +170,6 @@ export default function AnalyticsPage() {
             </div>
 
             <HoldingsRanked enriched={enriched} />
-        </>
+        </AppShell>
     );
 }

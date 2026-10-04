@@ -1,3 +1,4 @@
+import { AppShell } from '@/components/shared/app-shell';
 import { notFound } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -58,7 +59,7 @@ export default async function AssetDetailPage({
     const holdingPLPct = holdingInvested ? (holdingPL / holdingInvested) * 100 : 0;
 
     return (
-        <>
+        <AppShell>
             <Link
                 href='/portfolio'
                 className='mb-4 inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground'>
@@ -185,6 +186,6 @@ export default async function AssetDetailPage({
                     cashCurrency={portfolio.baseCurrency}
                 />
             </div>
-        </>
+        </AppShell>
     );
 }

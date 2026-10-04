@@ -1,5 +1,6 @@
 'use client';
 
+import { AppShell } from '@/components/shared/app-shell';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -41,7 +42,7 @@ export default function WatchlistPage() {
     };
 
     return (
-        <>
+        <AppShell>
             <PageHeader
                 eyebrow='Following'
                 title='Watchlist'
@@ -144,6 +145,6 @@ export default function WatchlistPage() {
                     )}
                 </CardContent>
             </Card>
-        </>
+        </AppShell>
     );
 }

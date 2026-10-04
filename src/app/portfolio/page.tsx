@@ -1,5 +1,6 @@
 'use client';
 
+import { AppShell } from '@/components/shared/app-shell';
 import * as React from 'react';
 
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -47,7 +48,7 @@ export default function PortfolioPage() {
         filter === 'All' ? enriched : enriched.filter((h) => h.cat === filter);
 
     return (
-        <>
+        <AppShell>
             <PageHeader
                 eyebrow='Manage holdings'
                 title='Portfolio'
@@ -76,6 +77,6 @@ export default function PortfolioPage() {
             </Tabs>
 
             <HoldingsTable rows={rows} />
-        </>
+        </AppShell>
     );
 }
