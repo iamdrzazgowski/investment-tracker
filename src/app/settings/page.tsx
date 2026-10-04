@@ -1,3 +1,4 @@
+import { AppShell } from '@/components/shared/app-shell';
 import { ChevronDown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PageHeader } from '@/components/shared/page-header';
@@ -12,7 +13,7 @@ const ROWS = [
 
 export default function SettingsPage() {
     return (
-        <>
+        <AppShell>
             <PageHeader eyebrow='Preferences' title='Settings' />
             <Card>
                 <CardContent className='pt-5'>
@@ -34,6 +35,6 @@ export default function SettingsPage() {
                     </ul>
                 </CardContent>
             </Card>
-        </>
+        </AppShell>
     );
 }

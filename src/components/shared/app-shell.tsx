@@ -1,7 +1,7 @@
 import { MobileHeader } from '@/components/shared/mobile-header';
 import { Sidebar } from '@/components/shared/sidebar';
 
-export default function AppLayout({ children }: LayoutProps<'/'>) {
+export function AppShell({ children }: { children: React.ReactNode }) {
     return (
         <div className='flex min-h-screen'>
             <Sidebar />

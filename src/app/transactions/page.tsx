@@ -1,5 +1,6 @@
 'use client';
 
+import { AppShell } from '@/components/shared/app-shell';
 import * as React from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,7 +30,7 @@ export default function TransactionsPage() {
     );
 
     return (
-        <>
+        <AppShell>
             <PageHeader eyebrow='History' title='Transactions' />
 
             <Tabs
@@ -140,6 +141,6 @@ export default function TransactionsPage() {
                     )}
                 </CardContent>
             </Card>
-        </>
+        </AppShell>
     );
 }
