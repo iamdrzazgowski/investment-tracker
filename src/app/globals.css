@@ -165,6 +165,21 @@
 
     html {
         @apply font-sans;
+        background-color: var(--background);
+    }
+
+    /* While a modal dialog/sheet locks page scroll, Base UI sets
+       `scrollbar-gutter: stable` inline on <html>, which reserves an
+       empty gutter where the scrollbar was. Force it off in that state
+       (`!important` is required to beat the inline style) and stretch
+       <body> to the full viewport width so the app fills the space
+       instead of leaving a blank strip. */
+    html[style*='scrollbar-gutter'] {
+        scrollbar-gutter: auto !important;
+    }
+
+    html[style*='scrollbar-gutter'] body {
+        width: 100vw;
     }
 
     body {

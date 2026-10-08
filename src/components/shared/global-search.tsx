@@ -17,17 +17,6 @@ export function SearchTrigger({ variant }: { variant: 'bar' | 'icon' }) {
     const router = useRouter();
     const [open, setOpen] = React.useState(false);
 
-    React.useEffect(() => {
-        const onKeyDown = (event: KeyboardEvent) => {
-            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-                event.preventDefault();
-                setOpen((prev) => !prev);
-            }
-        };
-        window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, []);
-
     const handleSelect = (asset: AssetSearchResult) => {
         setOpen(false);
         router.push(`/asset/${encodeURIComponent(asset.t)}`);
@@ -44,9 +33,6 @@ export function SearchTrigger({ variant }: { variant: 'bar' | 'icon' }) {
                     <span className='flex-1 truncate text-left'>
                         Search assets…
                     </span>
-                    <kbd className='rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] font-medium'>
-                        ⌘K
-                    </kbd>
                 </button>
             ) : (
                 <button
