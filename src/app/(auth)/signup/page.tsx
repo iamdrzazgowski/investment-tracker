@@ -1,7 +1,7 @@
 'use client';
 
 import { SignupForm } from '@/features/auth/components/signup-form';
-import Showcase from '@/components/ui/showcase';
+import AuthShowcase from '@/features/auth/components/auth-showcase';
 
 export default function SignupPage() {
     return (
@@ -14,7 +14,7 @@ export default function SignupPage() {
                     </div>
                 </div>
             </div>
-            <Showcase />
+            <AuthShowcase />
         </div>
     );
 }
