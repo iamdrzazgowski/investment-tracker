@@ -24,6 +24,19 @@ export async function proxy(request: NextRequest) {
         headers: await headers(),
     });
 
+    // API routes must never redirect to HTML (e.g. /login) — fetch callers
+    // would then fail with "Unexpected token '<', "<!DOCTYPE"... is not
+    // valid JSON". Return JSON 401 instead.
+    if (pathname.startsWith('/api/') && !pathname.startsWith('/api/auth')) {
+        if (!session && !isPublicPath(pathname)) {
+            return NextResponse.json(
+                { error: 'Unauthorized', results: [] },
+                { status: 401 },
+            );
+        }
+        return NextResponse.next();
+    }
+
     if (!session && !isPublicPath(pathname)) {
         return NextResponse.redirect(new URL('/login', request.url));
     }
