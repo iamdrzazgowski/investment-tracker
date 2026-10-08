@@ -50,18 +50,39 @@ export function AssetSearchField({
                             signal: controller.signal,
                         },
                     );
-                    if (!response.ok) throw new Error('Search failed');
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            throw new Error(
+                                'You need to log in to search assets.',
+                            );
+                        }
+                        throw new Error('Search failed');
+                    }
+
+                    const contentType =
+                        response.headers.get('content-type') ?? '';
+                    if (!contentType.includes('application/json')) {
+                        throw new Error(
+                            'Search returned a non-JSON response.',
+                        );
+                    }
 
                     const data = (await response.json()) as {
-                        results: AssetSearchResult[];
+                        results?: AssetSearchResult[];
                     };
+                    if (!Array.isArray(data.results)) {
+                        throw new Error('Search returned bad data.');
+                    }
                     setStatus({ type: 'ok', results: data.results });
                 } catch (err) {
                     if (controller.signal.aborted) return;
-                    console.error(err);
+                    console.error('Asset search failed:', err);
                     setStatus({
                         type: 'error',
-                        message: 'Could not search assets. Try again.',
+                        message:
+                            err instanceof Error && err.message
+                                ? err.message
+                                : 'Could not search assets. Try again.',
                     });
                 }
             },

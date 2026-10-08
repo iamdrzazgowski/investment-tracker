@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NAV } from '@/components/shared/nav-items';
-// import { SearchTrigger } from "@/components/global-search";
+import { SearchTrigger } from '@/components/global-search';
 import { cn } from '@/lib/utils';
 import { NordwellLogo } from '@/components/shared/nordwell-logo';
 
@@ -14,7 +14,7 @@ export function Sidebar() {
             <div className='flex items-center gap-2.5 px-2.5 pb-4 pt-1'>
                 <NordwellLogo />
             </div>
-            {/* <SearchTrigger variant="bar" /> */}
+            <SearchTrigger variant="bar" />
             <nav className='flex flex-col gap-0.5'>
                 {NAV.map((n) => {
                     const active =

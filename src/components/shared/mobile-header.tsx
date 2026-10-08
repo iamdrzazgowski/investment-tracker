@@ -11,7 +11,7 @@ import {
     SheetTrigger,
 } from '@/components/ui/sheet';
 import { NAV } from '@/components/shared/nav-items';
-// import { SearchTrigger } from "@/components/global-search";
+import { SearchTrigger } from '@/components/global-search';
 import { cn } from '@/lib/utils';
 import { NordwellLogo } from '@/components/shared/nordwell-logo';
 
@@ -26,10 +26,11 @@ export function MobileHeader() {
 
     return (
         <header className='sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-card/95 px-4 py-3 backdrop-blur md:hidden'>
+            <span className='flex-1 text-sm font-semibold'>
+                {current?.label ?? 'Nordwell'}
+            </span>
+            <SearchTrigger variant='icon' />
             <Sheet open={open} onOpenChange={setOpen}>
-                <span className='flex-1 text-sm font-semibold'>
-                    {current?.label ?? 'Nordwell'}
-                </span>
                 <SheetTrigger
                     className='flex h-8 w-8 items-center justify-center rounded-lg border border-border'
                     aria-label='Open menu'>
@@ -80,10 +81,6 @@ export function MobileHeader() {
                     </div>
                 </SheetContent>
             </Sheet>
-            {/*<span className='flex-1 text-sm font-semibold'>
-                {current?.label ?? 'Nordwell'}
-            </span>*/}
-            {/* <SearchTrigger variant="icon" /> */}
         </header>
     );
 }
