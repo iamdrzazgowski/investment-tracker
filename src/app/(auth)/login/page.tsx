@@ -1,7 +1,7 @@
 'use client';
 
 import { LoginForm } from '@/features/auth/components/login-form';
-import Showcase from '@/components/ui/showcase';
+import AuthShowcase from '@/features/auth/components/auth-showcase';
 
 export default function LoginPage() {
     return (
@@ -15,7 +15,7 @@ export default function LoginPage() {
                     </div>
                 </div>
 
-                <Showcase />
+                <AuthShowcase />
             </div>
         </div>
     );

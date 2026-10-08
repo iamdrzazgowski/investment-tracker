@@ -1,5 +1,5 @@
 import 'server-only';
-import { prisma } from '../prisma';
+import { prisma } from '@/lib/prisma';
 
 export async function createPortfolio(userId: string) {
     return prisma.portfolio.create({

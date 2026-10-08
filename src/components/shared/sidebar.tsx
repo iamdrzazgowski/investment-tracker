@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { NAV } from '@/components/shared/nav-items';
-import { SearchTrigger } from '@/components/global-search';
+import { SearchTrigger } from '@/components/shared/global-search';
 import { cn } from '@/lib/utils';
 import { NordwellLogo } from '@/components/shared/nordwell-logo';
 

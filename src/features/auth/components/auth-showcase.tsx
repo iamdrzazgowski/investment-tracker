@@ -1,8 +1,8 @@
 import React from 'react';
-import { NordwellLogo } from '../shared/nordwell-logo';
+import { NordwellLogo } from '@/components/shared/nordwell-logo';
 import Link from 'next/link';
 
-export default function Showcase() {
+export default function AuthShowcase() {
     return (
         <div className='relative hidden overflow-hidden bg-[#15151A] lg:flex lg:flex-col lg:justify-between lg:p-10'>
             <div
