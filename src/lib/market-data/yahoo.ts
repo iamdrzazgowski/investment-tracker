@@ -3,7 +3,9 @@ import YahooFinance from 'yahoo-finance2';
 import { RANGE_TO_YAHOO } from './range-config';
 import type { Range } from './range';
 
-export const yahooFinance = new YahooFinance();
+export const yahooFinance = new YahooFinance({
+    suppressNotices: ['yahooSurvey'],
+});
 
 export interface YahooSearchResult {
     symbol: string;
@@ -115,14 +117,49 @@ export async function searchYahooEquities(
 }
 
 export async function fetchYahooQuote(symbol: string): Promise<YahooQuote> {
-    const q = await yahooFinance.quote(symbol);
+    const clean = symbol.trim().toUpperCase();
+    if (!clean) throw new Error('Empty symbol');
+
+    const q = await yahooFinance.quote(clean);
+    if (!q || typeof q !== 'object' || !('symbol' in q)) {
+        throw new Error(`No quote found for symbol "${clean}"`);
+    }
+    const rec = q as Record<string, unknown>;
+
+    const name =
+        (typeof rec.shortName === 'string' && rec.shortName.trim()
+            ? rec.shortName.trim()
+            : null) ??
+        (typeof rec.longName === 'string' && rec.longName.trim()
+            ? rec.longName.trim()
+            : null) ??
+        clean;
+    const price =
+        typeof rec.regularMarketPrice === 'number'
+            ? rec.regularMarketPrice
+            : null;
+    if (price == null) {
+        throw new Error(`No market price for symbol "${clean}"`);
+    }
+
     return {
-        name: q.shortName ?? q.longName ?? symbol,
-        category: q.quoteType === 'ETF' ? 'ETF' : 'STOCK',
-        currency: q.currency ?? 'USD',
-        exchange: q.fullExchangeName ?? q.exchange ?? null,
-        price: q.regularMarketPrice,
-        dayChangePercent: q.regularMarketChangePercent ?? 0,
+        name,
+        category: rec.quoteType === 'ETF' ? 'ETF' : 'STOCK',
+        currency:
+            typeof rec.currency === 'string' && rec.currency
+                ? rec.currency
+                : 'USD',
+        exchange:
+            typeof rec.fullExchangeName === 'string' && rec.fullExchangeName
+                ? rec.fullExchangeName
+                : typeof rec.exchange === 'string'
+                  ? rec.exchange
+                  : null,
+        price,
+        dayChangePercent:
+            typeof rec.regularMarketChangePercent === 'number'
+                ? rec.regularMarketChangePercent
+                : 0,
     };
 }
 

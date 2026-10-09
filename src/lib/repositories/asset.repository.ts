@@ -46,19 +46,24 @@ export function getAssetByTicker(ticker: string) {
 }
 
 export async function getOrCreateAsset(ticker: string): Promise<Asset> {
-    const existing = await prisma.asset.findUnique({ where: { ticker } });
+    const clean = ticker.trim().toUpperCase();
+    if (!clean || clean === 'UNDEFINED' || clean === 'NULL') {
+        throw new Error(`Invalid ticker "${ticker}"`);
+    }
+
+    const existing = await prisma.asset.findUnique({ where: { ticker: clean } });
 
     const isFresh =
         existing?.lastPriceAt &&
         Date.now() - existing.lastPriceAt.getTime() < STALE_AFTER_MS;
     if (existing && isFresh) return existing;
 
-    const quote = await fetchYahooQuote(ticker);
+    const quote = await fetchYahooQuote(clean);
 
     return prisma.asset.upsert({
-        where: { ticker },
+        where: { ticker: clean },
         create: {
-            ticker,
+            ticker: clean,
             name: quote.name,
             category: quote.category,
             currency: quote.currency,
@@ -132,7 +137,13 @@ export async function getAssetPriceHistory(asset: Asset, range: Range) {
         { revalidate: RANGE_REVALIDATE_SECONDS[range] },
     );
 
-    return cached();
+    const points = await cached();
+    // unstable_cache serializes to JSON: Date becomes ISO string on cache hits.
+    // Normalize so callers always get Date instances.
+    return points.map((p) => ({
+        price: p.price,
+        date: p.date instanceof Date ? p.date : new Date(p.date),
+    }));
 }
 
 export interface SyncResult {

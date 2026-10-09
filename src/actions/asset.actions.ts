@@ -10,6 +10,6 @@ export async function getAssetHistoryAction(ticker: string, range: Range) {
     return points.map((p, i) => ({
         i,
         v: p.price,
-        date: p.date.toISOString(),
+        date: new Date(p.date).toISOString(),
     }));
 }

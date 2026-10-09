@@ -20,9 +20,10 @@ const DEFAULT_RANGE = '1M' as const;
 export default async function AssetDetailPage({
     params,
 }: {
-    params: { ticker: string };
+    params: Promise<{ ticker: string }>;
 }) {
-    const ticker = decodeURIComponent(params.ticker);
+    const { ticker: rawTicker } = await params;
+    const ticker = decodeURIComponent(rawTicker).trim().toUpperCase();
 
     let asset;
     try {
@@ -31,6 +32,7 @@ export default async function AssetDetailPage({
         console.error(`Failed to resolve asset "${ticker}":`, err);
         notFound();
     }
+    if (!asset) notFound();
 
     const portfolioPromise = requirePortfolio();
     const historyPromise = getAssetPriceHistory(asset, DEFAULT_RANGE);
@@ -42,7 +44,7 @@ export default async function AssetDetailPage({
     const initialData = initialPoints.map((p, i) => ({
         i,
         v: p.price,
-        date: p.date.toISOString(),
+        date: new Date(p.date).toISOString(),
     }));
 
     const owned = Boolean(holding);
