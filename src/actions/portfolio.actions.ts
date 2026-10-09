@@ -2,6 +2,7 @@
 
 import { requirePortfolio } from '@/lib/auth-helpers';
 import { getAssetByTicker } from '@/lib/repositories/asset.repository';
+import { getFxRate } from '@/lib/market-data/fx';
 import { buyAsset, sellAsset } from '@/lib/repositories/holding.repository';
 import { addFundsToPortfolio } from '@/lib/repositories/portfolio.repository';
 import {
@@ -67,7 +68,22 @@ export async function buyAction(
         getAssetByTicker(parsed.data.ticker),
     ]);
 
-    await buyAsset(portfolio.id, asset.id, parsed.data.quantity, parsed.data.price);
+    // `price` is quoted in the asset's currency, cash lives in the
+    // portfolio's base currency — convert server-side (source of truth).
+    const fxRate = await getFxRate(asset.currency, portfolio.baseCurrency);
+    if (fxRate == null) {
+        throw new Error(
+            `Exchange rate unavailable for ${asset.currency} to ${portfolio.baseCurrency}`,
+        );
+    }
+
+    await buyAsset(
+        portfolio.id,
+        asset.id,
+        parsed.data.quantity,
+        parsed.data.price,
+        fxRate,
+    );
 
     revalidatePath('/');
     revalidatePath('/portfolio');
@@ -89,11 +105,19 @@ export async function sellAction(
         getAssetByTicker(parsed.data.ticker),
     ]);
 
+    const fxRate = await getFxRate(asset.currency, portfolio.baseCurrency);
+    if (fxRate == null) {
+        throw new Error(
+            `Exchange rate unavailable for ${asset.currency} to ${portfolio.baseCurrency}`,
+        );
+    }
+
     await sellAsset(
         portfolio.id,
         asset.id,
         parsed.data.quantity,
         parsed.data.price,
+        fxRate,
     );
 
     revalidatePath('/');

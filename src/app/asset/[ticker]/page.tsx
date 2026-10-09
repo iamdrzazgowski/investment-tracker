@@ -6,9 +6,10 @@ import { BuySellPanel } from '@/features/asset/components/buy-sell-panel';
 import { AvatarBadge } from '@/components/shared/avatar-badge';
 import { Delta } from '@/components/shared/delta';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { fmtEUR, fmtNum, fmtSigned } from '@/lib/format';
+import { fmtCurrency, fmtNum, fmtSignedCurrency } from '@/lib/format';
 import { requirePortfolio } from '@/lib/auth-helpers';
 import { getHoldingForAsset } from '@/lib/repositories/holding.repository';
+import { getFxRate } from '@/lib/market-data/fx';
 import {
     getOrCreateAsset,
     getAssetPriceHistory,
@@ -41,6 +42,13 @@ export default async function AssetDetailPage({
         historyPromise,
     ]);
     const holding = await getHoldingForAsset(portfolio.id, asset.id);
+    // FX rate: 1 unit of asset currency -> portfolio (cash) currency.
+    // Null when unavailable (offline / unknown pair) — panel falls back
+    // to the no-conversion warning.
+    const fxRate =
+        asset.currency === portfolio.baseCurrency
+            ? 1
+            : await getFxRate(asset.currency, portfolio.baseCurrency);
     const initialData = initialPoints.map((p, i) => ({
         i,
         v: p.price,
@@ -79,7 +87,7 @@ export default async function AssetDetailPage({
                 </div>
                 <div className='ml-auto text-right'>
                     <div className='font-mono text-xl font-bold'>
-                        {fmtEUR(marketPrice)}
+                        {fmtCurrency(marketPrice, asset.currency)}
                     </div>
                     <Delta value={dayChange} />
                 </div>
@@ -117,7 +125,10 @@ export default async function AssetDetailPage({
                                         Average purchase price
                                     </span>
                                     <span className='font-mono'>
-                                        {fmtEUR(holdingAvgCost)}
+                                        {fmtCurrency(
+                                            holdingAvgCost,
+                                            asset.currency,
+                                        )}
                                     </span>
                                 </li>
                                 <li className='flex items-center justify-between py-2.5'>
@@ -125,7 +136,10 @@ export default async function AssetDetailPage({
                                         Total invested
                                     </span>
                                     <span className='font-mono'>
-                                        {fmtEUR(holdingInvested)}
+                                        {fmtCurrency(
+                                            holdingInvested,
+                                            asset.currency,
+                                        )}
                                     </span>
                                 </li>
                                 <li className='flex items-center justify-between py-2.5'>
@@ -133,7 +147,10 @@ export default async function AssetDetailPage({
                                         Current value
                                     </span>
                                     <span className='font-mono'>
-                                        {fmtEUR(holdingValue)}
+                                        {fmtCurrency(
+                                            holdingValue,
+                                            asset.currency,
+                                        )}
                                     </span>
                                 </li>
                                 <li className='flex items-center justify-between py-2.5'>
@@ -147,7 +164,10 @@ export default async function AssetDetailPage({
                                         Unrealized P/L
                                     </span>
                                     <span className='font-mono'>
-                                        {fmtSigned(holdingPL)}
+                                        {fmtSignedCurrency(
+                                            holdingPL,
+                                            asset.currency,
+                                        )}
                                     </span>
                                 </li>
                             </ul>
@@ -158,7 +178,10 @@ export default async function AssetDetailPage({
                                         Current price
                                     </span>
                                     <span className='font-mono'>
-                                        {fmtEUR(marketPrice)}
+                                        {fmtCurrency(
+                                            marketPrice,
+                                            asset.currency,
+                                        )}
                                     </span>
                                 </li>
                                 <li className='flex items-center justify-between py-2.5'>
@@ -186,6 +209,7 @@ export default async function AssetDetailPage({
                     ownedShares={holding ? holding.shares.toNumber() : 0}
                     cash={portfolio.cashBalance.toNumber()}
                     cashCurrency={portfolio.baseCurrency}
+                    fxRate={fxRate}
                 />
             </div>
         </AppShell>

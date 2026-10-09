@@ -18,6 +18,7 @@ export function BuySellPanel({
     ownedShares,
     cash,
     cashCurrency,
+    fxRate,
 }: {
     ticker: string;
     marketPrice: number;
@@ -26,6 +27,8 @@ export function BuySellPanel({
     ownedShares: number;
     cash: number;
     cashCurrency: string;
+    /** 1 unit of asset `currency` -> `cashCurrency`. Null when unavailable. */
+    fxRate: number | null;
 }) {
     const [priceMode, setPriceMode] = useState<'market' | 'custom'>('market');
     const [customPrice, setCustomPrice] = useState(marketPrice.toFixed(2));
@@ -38,11 +41,19 @@ export function BuySellPanel({
     const qtyNum = parseFloat(qty) || 0;
     const total = qtyNum * price;
 
-    // Uwaga: to porównanie jest przybliżone, jeśli currency !== cashCurrency
-    // (np. gotówka w EUR, cena w PLN) — bez kursu wymiany nie da się tego
-    // porównać dokładnie. Patrz komentarz pod kodem.
+    const needsFx = currency !== cashCurrency;
+    const rate = fxRate != null && fxRate > 0 ? fxRate : null;
+    // Order total converted into cash currency for the affordability check.
+    const totalInCash = needsFx ? (rate != null ? total * rate : null) : total;
+    // Cash balance converted into asset currency for display.
+    const cashInAsset =
+        needsFx && rate != null && rate > 0 ? cash / rate : null;
+
     const canBuy =
-        qtyNum > 0 && price > 0 && total <= cash + 0.005 && !isPending;
+        qtyNum > 0 &&
+        price > 0 &&
+        (totalInCash != null ? totalInCash <= cash + 0.005 : total <= cash + 0.005) &&
+        !isPending;
     const canSell =
         owned && qtyNum > 0 && qtyNum <= ownedShares && price > 0 && !isPending;
 
@@ -127,8 +138,13 @@ export function BuySellPanel({
 
                 <div className='flex items-center justify-between border-t border-dashed border-border pt-3 text-sm font-semibold'>
                     <span>Order total</span>
-                    <span className='font-mono'>
+                    <span className='font-mono text-right'>
                         {fmtCurrency(total, currency)}
+                        {needsFx && totalInCash != null && (
+                            <span className='block text-[11.5px] font-normal text-muted-foreground'>
+                                ≈ {fmtCurrency(totalInCash, cashCurrency)}
+                            </span>
+                        )}
                     </span>
                 </div>
 
@@ -151,7 +167,17 @@ export function BuySellPanel({
                 <p className='text-[11.5px] text-muted-foreground'>
                     {owned && `You own ${fmtNum(ownedShares, 0)} ${ticker}. `}
                     Cash available: {fmtCurrency(cash, cashCurrency)}
-                    {currency !== cashCurrency &&
+                    {needsFx &&
+                        cashInAsset != null &&
+                        ` (≈ ${fmtCurrency(cashInAsset, currency)})`}
+                    {needsFx && rate != null && (
+                        <span className='block'>
+                            Rate: 1 {currency} ≈ {rate.toFixed(4)}{' '}
+                            {cashCurrency}
+                        </span>
+                    )}
+                    {needsFx &&
+                        rate == null &&
                         ' (different currency — no FX conversion applied)'}
                     .
                 </p>
