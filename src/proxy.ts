@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth';
 
 // Routes accessible without a session.
 // '/' = start page, '/login' + '/signup' = auth pages.
-const PUBLIC_ROUTES = ['/', '/login', '/signup', '/dashboard'];
+const PUBLIC_ROUTES = ['/', '/login', '/signup'];
 
 function isPublicPath(pathname: string): boolean {
     return PUBLIC_ROUTES.some(
