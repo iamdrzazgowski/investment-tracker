@@ -14,7 +14,9 @@ import {
     getOrCreateAsset,
     getAssetPriceHistory,
 } from '@/lib/repositories/asset.repository';
+import { isOnWatchlist } from '@/lib/repositories/watchlist.repository';
 import AssetPriceChart from '@/features/asset/components/asset-price-chart';
+import { WatchlistToggle } from '@/features/watchlist/components/watchlist-toggle';
 
 const DEFAULT_RANGE = '1M' as const;
 
@@ -42,6 +44,7 @@ export default async function AssetDetailPage({
         historyPromise,
     ]);
     const holding = await getHoldingForAsset(portfolio.id, asset.id);
+    const watched = await isOnWatchlist(portfolio.id, asset.id);
     // FX rate: 1 unit of asset currency -> portfolio (cash) currency.
     // Null when unavailable (offline / unknown pair) — panel falls back
     // to the no-conversion warning.
@@ -83,6 +86,12 @@ export default async function AssetDetailPage({
                     <div className='text-[12.5px] text-muted-foreground'>
                         {asset.ticker} · {cat}
                         {asset.exchange && ` · ${asset.exchange}`}
+                    </div>
+                    <div className='mt-2'>
+                        <WatchlistToggle
+                            ticker={asset.ticker}
+                            initialWatched={watched}
+                        />
                     </div>
                 </div>
                 <div className='ml-auto text-right'>
