@@ -16,32 +16,31 @@ import {
 
 import { AssetSearchField } from '@/components/shared/asset-search-field';
 import type { AssetSearchResult } from '@/lib/repositories/asset.repository';
-
-import type { AssetMeta } from '@/lib/data';
+import { addWatchlistAction } from '@/actions/watchlist.actions';
 
 type AddWatchlistDialogProps = {
-    watchlist: AssetMeta[];
-    addToWatchlist: (asset: AssetMeta) => void;
+    excludeTickers: string[];
 };
 
-export function AddWatchlistDialog({
-    watchlist,
-    addToWatchlist,
-}: AddWatchlistDialogProps) {
+export function AddWatchlistDialog({ excludeTickers }: AddWatchlistDialogProps) {
     const [open, setOpen] = React.useState(false);
+    const [pending, setPending] = React.useState(false);
+    const [error, setError] = React.useState<string | null>(null);
 
-    const handleAdd = (asset: AssetSearchResult) => {
-        addToWatchlist({
-            t: asset.t,
-            name: asset.name,
-            cat: asset.cat,
-            price: asset.price ?? 0,
-            day: asset.day,
-            seed: asset.t
-                .split('')
-                .reduce((acc, c) => acc + c.charCodeAt(0), 0),
-        });
-        setOpen(false);
+    const handleAdd = async (asset: AssetSearchResult) => {
+        setPending(true);
+        setError(null);
+        try {
+            // Persist to the database — the server resolves the ticker
+            // against real market data (Yahoo) and creates the Asset +
+            // WatchlistItem rows.
+            await addWatchlistAction(asset.t);
+            setOpen(false);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to add asset');
+        } finally {
+            setPending(false);
+        }
     };
 
     return (
@@ -64,18 +63,26 @@ export function AddWatchlistDialog({
                     </DialogTitle>
                 </DialogHeader>
 
+                {error && (
+                    <p className='border-b px-4 py-2 text-[12px] text-destructive'>
+                        {error}
+                    </p>
+                )}
+
                 {open && (
-                    <AssetSearchField
-                        excludeTickers={watchlist.map((asset) => asset.t)}
-                        emptyMessage='All suggested assets are already on your watchlist.'
-                        actionIcon={
-                            <Plus
-                                size={14}
-                                className='shrink-0 text-muted-foreground'
-                            />
-                        }
-                        onSelect={handleAdd}
-                    />
+                    <div className={pending ? 'pointer-events-none opacity-60' : undefined}>
+                        <AssetSearchField
+                            excludeTickers={excludeTickers}
+                            emptyMessage='All suggested assets are already on your watchlist.'
+                            actionIcon={
+                                <Plus
+                                    size={14}
+                                    className='shrink-0 text-muted-foreground'
+                                />
+                            }
+                            onSelect={(asset) => void handleAdd(asset)}
+                        />
+                    </div>
                 )}
             </DialogContent>
         </Dialog>
