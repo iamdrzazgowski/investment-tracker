@@ -26,7 +26,7 @@ export interface WatchlistRow {
     price: number | null;
     day: number;
     currency: string;
-    seed: number;
+    trend: number[];
 }
 
 export function WatchlistTable({ initialRows }: { initialRows: WatchlistRow[] }) {
@@ -121,7 +121,7 @@ export function WatchlistTable({ initialRows }: { initialRows: WatchlistRow[] })
                                 <TableCell className='text-right'>
                                     <div className='flex justify-end'>
                                         <Sparkline
-                                            seed={w.seed}
+                                            values={w.trend}
                                             up={w.day >= 0}
                                         />
                                     </div>
