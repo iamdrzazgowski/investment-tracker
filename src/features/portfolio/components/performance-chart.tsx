@@ -18,11 +18,14 @@ import { RangeTabs } from '@/components/shared/range-tabs';
 export function PerformanceChart({
     seed,
     endValue,
-    height = 300,
+    height = 320,
+    showValue = true,
 }: {
     seed: number;
     endValue: number;
     height?: number;
+    /** Hide the headline value when the page already shows it (e.g. dashboard hero). */
+    showValue?: boolean;
 }) {
     const [range, setRange] = useState<Range>('1M');
     const data = useMemo(
@@ -38,13 +41,20 @@ export function PerformanceChart({
     const gradId = `grad-${seed}`;
 
     return (
-        <Card className='p-5'>
-            <div className='mb-1.5 flex flex-wrap items-start justify-between gap-3'>
+        <Card className='gap-5 p-5 md:p-6'>
+            <div className='flex flex-wrap items-start justify-between gap-3'>
                 <div>
-                    <div className='font-mono text-2xl font-bold tracking-tight'>
-                        {fmtEUR(endValue)}
+                    {showValue && (
+                        <div className='mb-1 font-mono text-2xl font-semibold tracking-tight tabular-nums'>
+                            {fmtEUR(endValue)}
+                        </div>
+                    )}
+                    <div className='flex items-center gap-2'>
+                        <Delta value={changePct} />
+                        <span className='font-mono text-[11.5px] uppercase tracking-wider text-muted-foreground'>
+                            {range}
+                        </span>
                     </div>
-                    <Delta value={changePct} />
                 </div>
                 <RangeTabs value={range} onChange={setRange} />
             </div>
@@ -63,7 +73,7 @@ export function PerformanceChart({
                                 <stop
                                     offset='0%'
                                     stopColor={stroke}
-                                    stopOpacity={0.16}
+                                    stopOpacity={0.1}
                                 />
                                 <stop
                                     offset='100%'
@@ -81,7 +91,7 @@ export function PerformanceChart({
                             }}
                             content={({ active, payload }) =>
                                 active && payload && payload.length ? (
-                                    <div className='rounded-md bg-foreground px-2.5 py-1.5 font-mono text-xs font-semibold text-background'>
+                                    <div className='rounded-md bg-foreground px-2.5 py-1.5 font-mono text-xs font-medium tabular-nums text-background'>
                                         {fmtEUR(payload[0].value as number)}
                                     </div>
                                 ) : null
@@ -91,7 +101,7 @@ export function PerformanceChart({
                             type='monotone'
                             dataKey='v'
                             stroke={stroke}
-                            strokeWidth={2}
+                            strokeWidth={1.5}
                             fill={`url(#${gradId})`}
                         />
                     </AreaChart>

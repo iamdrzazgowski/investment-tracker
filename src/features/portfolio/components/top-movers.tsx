@@ -59,7 +59,7 @@ function Col({
 }) {
     return (
         <div>
-            <div className='mb-2 text-[11.5px] font-semibold uppercase tracking-wide text-muted-foreground'>
+            <div className='mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground'>
                 {title}
             </div>
 
@@ -67,17 +67,17 @@ function Col({
                 {rows.map((h) => (
                     <li
                         key={h.t}
-                        className='flex cursor-pointer items-center justify-between py-2 first:pt-0 last:pb-0'
+                        className='-mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2.5 transition-colors duration-150 hover:bg-muted/60'
                         onClick={() => onSelect(h.t)}>
                         <div className='flex items-center gap-2.5'>
                             <AvatarBadge t={h.t} cat={h.cat} />
 
                             <div>
-                                <div className='text-[13px] font-semibold'>
+                                <div className='font-mono text-[13px] font-semibold'>
                                     {h.t}
                                 </div>
 
-                                <div className='text-[11.5px] text-muted-foreground'>
+                                <div className='font-mono text-[11.5px] text-muted-foreground'>
                                     {fmtEUR(h.price)}
                                 </div>
                             </div>
@@ -104,7 +104,7 @@ export function TopMovers() {
                 <CardTitle>Top movers today</CardTitle>
             </CardHeader>
 
-            <CardContent className='grid grid-cols-2 gap-5 pt-0'>
+            <CardContent className='grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-1'>
                 <Col
                     title='Gainers'
                     rows={gainers}

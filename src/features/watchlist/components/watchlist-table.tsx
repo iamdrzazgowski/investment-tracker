@@ -64,10 +64,14 @@ export function WatchlistTable({ initialRows }: { initialRows: WatchlistRow[] })
         return (
             <Card>
                 <CardContent>
-                    <p className='py-8 text-center text-sm text-muted-foreground'>
-                        Your watchlist is empty. Add an asset to start
-                        tracking it.
-                    </p>
+                    <div className='py-8 text-center'>
+                        <p className='mb-1 text-sm font-semibold'>
+                            Your watchlist is empty.
+                        </p>
+                        <p className='text-[13px] text-muted-foreground'>
+                            Add assets you want to follow.
+                        </p>
+                    </div>
                 </CardContent>
             </Card>
         );
@@ -101,11 +105,11 @@ export function WatchlistTable({ initialRows }: { initialRows: WatchlistRow[] })
                                     <div className='flex items-center gap-2.5'>
                                         <AvatarBadge t={w.ticker} cat={w.cat} />
                                         <div>
-                                            <div className='text-[13px] font-semibold'>
-                                                {w.name}
-                                            </div>
-                                            <div className='text-[11.5px] text-muted-foreground'>
+                                            <div className='font-mono text-[13px] font-semibold'>
                                                 {w.ticker}
+                                            </div>
+                                            <div className='text-[12px] text-muted-foreground'>
+                                                {w.name}
                                             </div>
                                         </div>
                                     </div>

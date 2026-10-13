@@ -55,7 +55,7 @@ export default function PortfolioPage() {
                 action={<NewOrderDialog />}
             />
 
-            <div className='mb-5'>
+            <div className='mb-8'>
                 <CategoryBreakdown
                     enriched={enriched}
                     cash={cash}
@@ -66,7 +66,7 @@ export default function PortfolioPage() {
             <Tabs
                 value={filter}
                 onValueChange={(v) => setFilter(v as Category | 'All')}
-                className='mb-4'>
+                className='mb-6'>
                 <TabsList>
                     {(['All', 'Stocks', 'ETFs', 'Crypto'] as const).map((c) => (
                         <TabsTrigger key={c} value={c}>

@@ -67,11 +67,11 @@ export function HoldingsTable({
                                         <div className='flex items-center gap-2.5'>
                                             <AvatarBadge t={h.t} cat={h.cat} />
                                             <div>
-                                                <div className='text-[13px] font-semibold'>
-                                                    {h.name}
-                                                </div>
-                                                <div className='text-[11.5px] text-muted-foreground'>
+                                                <div className='font-mono text-[13px] font-semibold'>
                                                     {h.t}
+                                                </div>
+                                                <div className='text-[12px] text-muted-foreground'>
+                                                    {h.name}
                                                 </div>
                                             </div>
                                         </div>

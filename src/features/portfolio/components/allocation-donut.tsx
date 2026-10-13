@@ -36,7 +36,7 @@ export function AllocationDonut() {
                 <CardTitle>Asset allocation</CardTitle>
             </CardHeader>
 
-            <CardContent className='flex items-center gap-5'>
+            <CardContent className='flex flex-col items-center gap-6 sm:flex-row'>
                 <div style={{ width: 140, height: 140 }} className='shrink-0'>
                     <ResponsiveContainer width='100%' height='100%'>
                         <PieChart>
@@ -44,9 +44,9 @@ export function AllocationDonut() {
                                 data={ALLOCATION}
                                 dataKey='value'
                                 nameKey='name'
-                                innerRadius={50}
+                                innerRadius={52}
                                 outerRadius={68}
-                                paddingAngle={2}
+                                paddingAngle={1}
                                 stroke='none'>
                                 {ALLOCATION.map((a) => (
                                     <Cell
@@ -59,13 +59,13 @@ export function AllocationDonut() {
                     </ResponsiveContainer>
                 </div>
 
-                <ul className='flex-1 space-y-1.5'>
+                <ul className='w-full flex-1 space-y-2.5'>
                     {ALLOCATION.map((a) => (
                         <li
                             key={a.name}
-                            className='flex items-center gap-2 text-[12.5px]'>
+                            className='flex items-center gap-2.5 text-[13px]'>
                             <span
-                                className='h-2 w-2 shrink-0 rounded-sm'
+                                className='h-2.5 w-2.5 shrink-0 rounded-[2px]'
                                 style={{
                                     background: CATEGORY_COLORS[a.name],
                                 }}
@@ -73,7 +73,7 @@ export function AllocationDonut() {
 
                             <span className='flex-1'>{a.name}</span>
 
-                            <span className='font-semibold text-muted-foreground'>
+                            <span className='font-mono text-[12.5px] tabular-nums text-muted-foreground'>
                                 {a.pct.toFixed(1)}%
                             </span>
                         </li>

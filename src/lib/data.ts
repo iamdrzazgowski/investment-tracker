@@ -35,10 +35,10 @@ export interface Transaction {
 export const TODAY = '2026-08-11';
 
 export const CATEGORY_COLORS: Record<Category, string> = {
-    Stocks: '#15151A',
-    ETFs: '#0C6B4F',
-    Crypto: '#B08A3E',
-    Cash: '#D6D2CB',
+    Stocks: 'var(--it-cat-stocks)',
+    ETFs: 'var(--it-cat-etfs)',
+    Crypto: 'var(--it-cat-crypto)',
+    Cash: 'var(--it-cat-cash)',
 };
 
 export const INITIAL_HOLDINGS: Holding[] = [

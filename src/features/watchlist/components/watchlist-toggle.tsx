@@ -45,7 +45,8 @@ export function WatchlistToggle({
                 variant={watched ? 'secondary' : 'outline'}
                 onClick={() => void toggle()}
                 disabled={pending}
-                className='h-8.75 rounded-lg px-3.5 text-[13.5px] font-semibold'>
+                aria-pressed={watched}
+                className='h-9 px-3.5 text-[13.5px]'>
                 {pending ? (
                     <Loader2 size={14} className='animate-spin' />
                 ) : watched ? (

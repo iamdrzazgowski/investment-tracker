@@ -73,36 +73,41 @@ export default async function AssetDetailPage({
 
     return (
         <AppShell>
-            <Link
-                href='/portfolio'
-                className='mb-4 inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground hover:text-foreground'>
-                <ChevronLeft size={15} /> Back
-            </Link>
+            <div className='mb-6 flex items-center justify-between gap-4'>
+                <Link
+                    href='/portfolio'
+                    className='inline-flex items-center gap-1 text-[13px] font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground'>
+                    <ChevronLeft size={15} /> Back
+                </Link>
+                <WatchlistToggle
+                    ticker={asset.ticker}
+                    initialWatched={watched}
+                />
+            </div>
 
-            <div className='mb-5 flex items-center gap-3.5'>
-                <AvatarBadge t={asset.ticker} cat={cat} />
-                <div>
-                    <div className='text-lg font-bold'>{asset.name}</div>
-                    <div className='text-[12.5px] text-muted-foreground'>
-                        {asset.ticker} · {cat}
-                        {asset.exchange && ` · ${asset.exchange}`}
-                    </div>
-                    <div className='mt-2'>
-                        <WatchlistToggle
-                            ticker={asset.ticker}
-                            initialWatched={watched}
-                        />
+            <div className='mb-8 flex flex-col gap-6 md:mb-10 md:flex-row md:items-start md:justify-between md:gap-8'>
+                <div className='flex min-w-0 items-start gap-4'>
+                    <AvatarBadge t={asset.ticker} cat={cat} size='lg' />
+                    <div className='min-w-0'>
+                        <h1 className='text-[28px] font-semibold leading-none tracking-[-0.03em] md:text-[40px]'>
+                            {asset.ticker}
+                        </h1>
+                        <div className='mt-2 text-[13px] text-muted-foreground'>
+                            {asset.name} · {cat}
+                            {asset.exchange && ` · ${asset.exchange}`}
+                        </div>
+
                     </div>
                 </div>
-                <div className='ml-auto text-right'>
-                    <div className='font-mono text-xl font-bold'>
+                <div className='shrink-0 md:text-right'>
+                    <div className='mb-1 font-mono text-3xl font-medium tracking-tight tabular-nums md:text-4xl'>
                         {fmtCurrency(marketPrice, asset.currency)}
                     </div>
                     <Delta value={dayChange} />
                 </div>
             </div>
 
-            <div className='mb-5'>
+            <div className='mb-6 md:mb-8'>
                 <AssetPriceChart
                     ticker={asset.ticker}
                     currency={asset.currency}
@@ -111,7 +116,7 @@ export default async function AssetDetailPage({
                 />
             </div>
 
-            <div className='mb-5 grid gap-5 md:grid-cols-2'>
+            <div className='mb-6 grid gap-6 md:mb-8 md:grid-cols-2 md:gap-8'>
                 <Card>
                     <CardHeader>
                         <CardTitle>

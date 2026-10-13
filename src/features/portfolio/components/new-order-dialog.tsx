@@ -33,16 +33,19 @@ export function NewOrderDialog() {
                 render={
                     <Button
                         variant='outline'
-                        className='h-8.75 rounded-lg px-3.5 text-[13.5px] font-semibold'>
+                        className='h-9 px-3.5 text-[13.5px]'>
                         <Plus size={14} />
                         New order
                     </Button>
                 }
             />
 
-            <DialogContent className='max-w-95 gap-0 rounded-[14px] p-0'>
-                <DialogHeader className='border-b px-4 py-3.5'>
-                    <DialogTitle className='text-[13.5px] font-semibold'>
+            <DialogContent
+                placement='top'
+                showCloseButton={false}
+                className='gap-0 p-0'>
+                <DialogHeader className='border-b px-4 py-3'>
+                    <DialogTitle className='font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground'>
                         New order — choose an asset
                     </DialogTitle>
                 </DialogHeader>
@@ -50,6 +53,7 @@ export function NewOrderDialog() {
                 {open && (
                     <AssetSearchField
                         emptyMessage='No assets available.'
+                        enterLabel='Choose'
                         actionIcon={
                             <Plus
                                 size={14}

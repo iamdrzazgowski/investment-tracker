@@ -6,9 +6,9 @@
 
 @theme inline {
     /* Fonts */
-    --font-sans: var(--font-inter);
+    --font-sans: var(--font-space-grotesk);
     --font-mono: var(--font-plex-mono);
-    --font-heading: var(--font-inter);
+    --font-heading: var(--font-space-grotesk);
 
     /* Colors */
     --color-background: var(--background);
@@ -31,6 +31,7 @@
     --color-ring: var(--ring);
     --color-input: var(--input);
     --color-border: var(--border);
+    --color-border-strong: var(--it-border-strong);
     --color-destructive: var(--destructive);
     --color-accent-foreground: var(--accent-foreground);
     --color-accent: var(--accent);
@@ -55,41 +56,57 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/*
+ * Nordwell design tokens.
+ * `--it-*` are the brand-level tokens; the shadcn variables below map onto them.
+ */
 :root {
-    /* Nordwell paper background */
-    --background: oklch(0.985 0.004 90);
-    --foreground: oklch(0.145 0 0);
+    --it-background: #f7f7f5;
+    --it-surface: #ffffff;
+    --it-surface-subtle: #f1f1ee;
+    --it-foreground: #111111;
+    --it-muted: #737373;
+    --it-border: #e4e4e0;
+    --it-border-strong: #cfcfca;
+    --it-positive: #2e8b57;
+    --it-negative: #c94a4a;
 
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
+    /* Allocation palette — monochrome on purpose */
+    --it-cat-stocks: #111111;
+    --it-cat-etfs: #4f4f4b;
+    --it-cat-crypto: #8f8f8a;
+    --it-cat-cash: #d4d4cf;
 
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
+    --background: var(--it-background);
+    --foreground: var(--it-foreground);
 
-    /* Near-black */
-    --primary: oklch(0.145 0 0);
-    --primary-foreground: oklch(0.985 0 0);
+    --card: var(--it-surface);
+    --card-foreground: var(--it-foreground);
 
-    --secondary: oklch(0.965 0.004 90);
-    --secondary-foreground: oklch(0.145 0 0);
+    --popover: var(--it-surface);
+    --popover-foreground: var(--it-foreground);
 
-    --muted: oklch(0.955 0.004 90);
-    --muted-foreground: oklch(0.556 0 0);
+    --primary: var(--it-foreground);
+    --primary-foreground: #ffffff;
 
-    --accent: oklch(0.955 0.004 90);
-    --accent-foreground: oklch(0.145 0 0);
+    --secondary: var(--it-surface-subtle);
+    --secondary-foreground: var(--it-foreground);
 
-    /* Muted brick red */
-    --destructive: oklch(0.55 0.15 29);
-    --destructive-foreground: oklch(0.985 0 0);
+    --muted: var(--it-surface-subtle);
+    --muted-foreground: var(--it-muted);
 
-    --border: oklch(0.91 0.004 90);
-    --input: oklch(0.89 0.004 90);
-    --ring: oklch(0.145 0 0);
+    --accent: var(--it-surface-subtle);
+    --accent-foreground: var(--it-foreground);
 
-    /* Deep emerald */
-    --positive: oklch(0.45 0.1 162);
-    --positive-soft: oklch(0.94 0.03 162);
+    --destructive: var(--it-negative);
+    --destructive-foreground: #ffffff;
+
+    --border: var(--it-border);
+    --input: var(--it-border-strong);
+    --ring: var(--it-foreground);
+
+    --positive: var(--it-positive);
+    --positive-soft: color-mix(in srgb, var(--it-positive) 10%, transparent);
 
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
@@ -97,50 +114,36 @@
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
 
-    /* 12px base radius */
     --radius: 0.5rem;
 
-    --sidebar: oklch(1 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.145 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.955 0.004 90);
-    --sidebar-accent-foreground: oklch(0.145 0 0);
-    --sidebar-border: oklch(0.91 0.004 90);
-    --sidebar-ring: oklch(0.145 0 0);
+    --sidebar: var(--it-background);
+    --sidebar-foreground: var(--it-foreground);
+    --sidebar-primary: var(--it-foreground);
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: var(--it-surface-subtle);
+    --sidebar-accent-foreground: var(--it-foreground);
+    --sidebar-border: var(--it-border);
+    --sidebar-ring: var(--it-foreground);
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
+    --it-background: #0b0b0b;
+    --it-surface: #111111;
+    --it-surface-subtle: #171717;
+    --it-foreground: #f4f4f1;
+    --it-muted: #8a8a86;
+    --it-border: #292929;
+    --it-border-strong: #3a3a3a;
+    --it-positive: #4cae7a;
+    --it-negative: #d96b6b;
 
-    --card: oklch(0.19 0 0);
-    --card-foreground: oklch(0.985 0 0);
+    --it-cat-stocks: #f4f4f1;
+    --it-cat-etfs: #b4b4af;
+    --it-cat-crypto: #7a7a76;
+    --it-cat-cash: #3a3a3a;
 
-    --popover: oklch(0.19 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-
-    --primary: oklch(0.985 0 0);
-    --primary-foreground: oklch(0.145 0 0);
-
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-
-    --destructive: oklch(0.66 0.17 29);
-    --destructive-foreground: oklch(0.145 0 0);
-
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.708 0 0);
-
-    --positive: oklch(0.72 0.13 162);
-    --positive-soft: oklch(0.3 0.05 162);
+    --primary-foreground: #111111;
+    --destructive-foreground: #111111;
 
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);
@@ -148,14 +151,7 @@
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
 
-    --sidebar: oklch(0.19 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.985 0 0);
-    --sidebar-primary-foreground: oklch(0.145 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    --sidebar-primary-foreground: #111111;
 }
 
 @layer base {
@@ -184,11 +180,17 @@
 
     body {
         @apply bg-background text-foreground;
-        font-family: var(--font-inter);
+        font-family: var(--font-space-grotesk);
     }
 
-    input::placeholder {
-        font-family: var(--font-plex-mono);
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
     }
 }
 
@@ -196,3 +198,4 @@
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.01em;
 }
+
