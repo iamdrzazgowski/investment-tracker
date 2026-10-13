@@ -1,4 +1,3 @@
-import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { fmtPct, fmtSigned } from '@/lib/format';
 
@@ -15,15 +14,13 @@ export function Delta({
     return (
         <span
             className={cn(
-                'inline-flex items-center gap-0.5 font-semibold',
+                'inline-flex items-center gap-1 font-mono font-medium tabular-nums',
                 size === 'sm' ? 'text-xs' : 'text-[13.5px]',
                 positive ? 'text-positive' : 'text-destructive',
             )}>
-            {positive ? (
-                <ArrowUpRight size={size === 'sm' ? 12 : 14} />
-            ) : (
-                <ArrowDownRight size={size === 'sm' ? 12 : 14} />
-            )}
+            <span aria-hidden className='text-[0.7em] leading-none'>
+                {positive ? '▲' : '▼'}
+            </span>
             {pct ? fmtPct(value) : fmtSigned(value)}
         </span>
     );

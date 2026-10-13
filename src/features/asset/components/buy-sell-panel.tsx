@@ -10,6 +10,11 @@ import { cn } from '@/lib/utils';
 import { fmtCurrency, fmtNum } from '@/lib/format';
 import { buyAction, sellAction } from '@/actions/portfolio.actions';
 
+const labelClass =
+    'font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground';
+const inputClass =
+    'h-10 px-3 font-mono text-base tabular-nums shadow-none focus-visible:border-foreground focus-visible:ring-0 md:text-sm';
+
 export function BuySellPanel({
     ticker,
     marketPrice,
@@ -82,44 +87,58 @@ export function BuySellPanel({
             <CardHeader>
                 <CardTitle>Trade {ticker}</CardTitle>
             </CardHeader>
-            <CardContent className='space-y-3 pt-0'>
-                <div>
-                    <Label htmlFor='qty'>Quantity</Label>
+            <CardContent className='space-y-6'>
+                <div className='space-y-2.5'>
+                    <Label htmlFor='qty' className={labelClass}>
+                        Quantity
+                    </Label>
                     <Input
                         id='qty'
                         type='number'
                         min='0'
                         step='1'
                         placeholder='0'
+                        className={inputClass}
                         value={qty}
                         onChange={(e) => setQty(e.target.value)}
                     />
                 </div>
 
-                <div>
-                    <Label>Price</Label>
-                    <div className='mb-2 inline-flex w-full rounded-lg border border-border p-1'>
+                <div className='space-y-2.5'>
+                    <Label htmlFor='price' className={labelClass}>
+                        Price
+                    </Label>
+                    <div
+                        role='group'
+                        aria-label='Price mode'
+                        className='flex w-full gap-1 rounded-lg border border-border p-1'>
                         <button
+                            type='button'
+                            aria-pressed={priceMode === 'market'}
                             className={cn(
-                                'flex-1 rounded-md px-2 py-1.5 text-[11.5px] font-semibold text-muted-foreground',
+                                'flex-1 rounded-md px-2 py-2 text-[12px] font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground',
                                 priceMode === 'market' &&
-                                    'bg-primary text-primary-foreground',
+                                    'bg-primary text-primary-foreground hover:text-primary-foreground',
                             )}
                             onClick={() => setPriceMode('market')}>
-                            Current market price
+                            Market price
                         </button>
                         <button
+                            type='button'
+                            aria-pressed={priceMode === 'custom'}
                             className={cn(
-                                'flex-1 rounded-md px-2 py-1.5 text-[11.5px] font-semibold text-muted-foreground',
+                                'flex-1 rounded-md px-2 py-2 text-[12px] font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground',
                                 priceMode === 'custom' &&
-                                    'bg-primary text-primary-foreground',
+                                    'bg-primary text-primary-foreground hover:text-primary-foreground',
                             )}
                             onClick={() => setPriceMode('custom')}>
                             Custom price
                         </button>
                     </div>
                     {priceMode === 'market' ? (
-                        <div className='rounded-lg bg-muted px-3 py-2 font-mono text-[15px] font-bold'>
+                        <div
+                            id='price'
+                            className='flex h-10 items-center rounded-lg bg-muted px-3 font-mono text-[15px] font-medium tabular-nums'>
                             {fmtCurrency(marketPrice, currency)}{' '}
                             <span className='font-sans text-[11.5px] font-normal text-muted-foreground'>
                                 / unit
@@ -127,16 +146,18 @@ export function BuySellPanel({
                         </div>
                     ) : (
                         <Input
+                            id='price'
                             type='number'
                             min='0'
                             step='0.01'
+                            className={inputClass}
                             value={customPrice}
                             onChange={(e) => setCustomPrice(e.target.value)}
                         />
                     )}
                 </div>
 
-                <div className='flex items-center justify-between border-t border-dashed border-border pt-3 text-sm font-semibold'>
+                <div className='flex items-center justify-between gap-4 border-t border-border pt-6 text-sm font-semibold'>
                     <span>Order total</span>
                     <span className='font-mono text-right'>
                         {fmtCurrency(total, currency)}
@@ -148,23 +169,23 @@ export function BuySellPanel({
                     </span>
                 </div>
 
-                <div className='flex gap-2.5 pt-1'>
+                <div className='flex gap-3'>
                     <Button
-                        className='flex-1'
+                        className='h-10 flex-1'
                         disabled={!canBuy}
                         onClick={handleBuy}>
                         Buy
                     </Button>
                     <Button
                         variant='outline'
-                        className='flex-1'
+                        className='h-10 flex-1'
                         disabled={!canSell}
                         onClick={handleSell}>
                         Sell
                     </Button>
                 </div>
 
-                <p className='text-[11.5px] text-muted-foreground'>
+                <p className='text-[12px] leading-relaxed text-muted-foreground'>
                     {owned && `You own ${fmtNum(ownedShares, 0)} ${ticker}. `}
                     Cash available: {fmtCurrency(cash, cashCurrency)}
                     {needsFx &&

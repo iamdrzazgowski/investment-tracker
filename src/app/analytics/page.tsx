@@ -24,10 +24,12 @@ const Stat = ({
     delta?: number;
     sub?: string;
 }) => (
-    <div className='bg-card p-4'>
-        <div className='mb-1.5 text-xs text-muted-foreground'>{label}</div>
+    <div className='bg-card p-5 md:p-6'>
+        <div className='mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground'>
+            {label}
+        </div>
 
-        <div className='mb-1 text-[17px] font-semibold tracking-tight'>
+        <div className='mb-1 font-mono text-xl font-medium tracking-tight tabular-nums md:text-2xl'>
             {value}
         </div>
 
@@ -117,7 +119,7 @@ export default function AnalyticsPage() {
         <AppShell>
             <PageHeader eyebrow='Insights' title='Analytics' />
 
-            <div className='mb-1 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4'>
+            <div className='grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4'>
                 <Stat
                     label='Best performer'
                     value={best ? best.t : '—'}
@@ -138,7 +140,7 @@ export default function AnalyticsPage() {
                 <Stat label='Total return' value={fmtPct(totals.totalPLPct)} />
             </div>
 
-            <div className='mb-5 mt-px grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4'>
+            <div className='mb-8 mt-px grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4'>
                 <Stat
                     label='Largest position'
                     value={largest ? largest.t : '—'}
@@ -160,11 +162,11 @@ export default function AnalyticsPage() {
                 <Stat label='Open positions' value={`${enriched.length}`} />
             </div>
 
-            <div className='mb-5'>
+            <div className='mb-8'>
                 <BenchmarkChart seed={5} />
             </div>
 
-            <div className='mb-5 grid gap-5 lg:grid-cols-2'>
+            <div className='mb-8 grid gap-6 md:gap-8 lg:grid-cols-2'>
                 <CategoryPerformanceChart enriched={enriched} />
                 <MonthlyReturnsChart />
             </div>

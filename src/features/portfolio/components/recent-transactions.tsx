@@ -18,7 +18,7 @@ export function RecentTransactions() {
                 <CardAction>
                     <Link
                         href='/transactions'
-                        className='text-[12.5px] font-medium text-muted-foreground hover:text-foreground'>
+                        className='text-[13px] font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline'>
                         View all
                     </Link>
                 </CardAction>
@@ -32,7 +32,7 @@ export function RecentTransactions() {
                         return (
                             <li
                                 key={tx.id}
-                                className='flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0'>
+                                className='flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0'>
                                 <div className='flex min-w-0 items-center gap-2.5'>
                                     <AvatarBadge
                                         t={tx.t}

@@ -19,20 +19,22 @@ export function StatRow({ totals: _totals }: { totals?: unknown }) {
     ];
 
     return (
-        <div className='mb-5 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4'>
+        <dl className='grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4'>
             {stats.map((s) => (
-                <div key={s.label} className='bg-card p-4'>
-                    <div className='mb-1.5 text-xs text-muted-foreground'>
+                <div key={s.label} className='bg-card p-5 md:p-6'>
+                    <dt className='mb-3 font-mono text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground'>
                         {s.label}
-                    </div>
-                    <div className='mb-1 font-mono text-[17px] font-semibold tracking-tight'>
-                        {s.value}
-                    </div>
-                    {s.delta !== undefined && (
-                        <Delta value={s.delta} size='sm' />
-                    )}
+                    </dt>
+                    <dd className='m-0'>
+                        <div className='mb-1 font-mono text-xl font-medium tracking-tight tabular-nums md:text-2xl'>
+                            {s.value}
+                        </div>
+                        {s.delta !== undefined && (
+                            <Delta value={s.delta} size='sm' />
+                        )}
+                    </dd>
                 </div>
             ))}
-        </div>
+        </dl>
     );
 }

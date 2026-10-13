@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { Loader2, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AvatarBadge } from '@/components/shared/avatar-badge';
 import type { AssetSearchResult } from '@/lib/repositories/asset.repository';
 import { fmtCurrency } from '@/lib/format';
+import { cn } from '@/lib/utils';
 
 type SearchFormValues = { query: string };
 
@@ -14,6 +15,8 @@ type AssetSearchFieldProps = {
     excludeTickers?: string[];
     emptyMessage: string;
     actionIcon: React.ReactNode;
+    /** Label for the Enter key hint in the footer, e.g. "Open" or "Add". */
+    enterLabel?: string;
     onSelect: (asset: AssetSearchResult) => void;
 };
 
@@ -22,17 +25,36 @@ type SearchStatus =
     | { type: 'error'; message: string }
     | { type: 'ok'; results: AssetSearchResult[] };
 
+const CATEGORY_LABEL: Record<string, string> = {
+    Stocks: 'Stock',
+    ETFs: 'ETF',
+    Crypto: 'Crypto',
+};
+
+function Kbd({ children }: { children: React.ReactNode }) {
+    return (
+        <kbd className='rounded border border-border bg-muted px-1 py-px font-mono text-[10px] text-muted-foreground'>
+            {children}
+        </kbd>
+    );
+}
+
 export function AssetSearchField({
     excludeTickers = [],
     emptyMessage,
     actionIcon,
+    enterLabel = 'Select',
     onSelect,
 }: AssetSearchFieldProps) {
+    const listId = useId();
     const { register, control } = useForm<SearchFormValues>({
         defaultValues: { query: '' },
     });
+    const queryField = register('query');
     const query = useWatch({ control, name: 'query', defaultValue: '' });
     const [status, setStatus] = useState<SearchStatus>({ type: 'loading' });
+    const [activeIndex, setActiveIndex] = useState(0);
+    const listRef = useRef<HTMLUListElement>(null);
 
     useEffect(() => {
         const controller = new AbortController();
@@ -102,57 +124,135 @@ export function AssetSearchField({
               )
             : [];
 
+    const active = Math.min(activeIndex, Math.max(visible.length - 1, 0));
+    const optionId = (index: number) => `${listId}-option-${index}`;
+
+    const moveActive = (next: number) => {
+        setActiveIndex(next);
+        listRef.current
+            ?.querySelector(`#${CSS.escape(optionId(next))}`)
+            ?.scrollIntoView({ block: 'nearest' });
+    };
+
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (visible.length === 0) return;
+
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            moveActive((active + 1) % visible.length);
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            moveActive((active - 1 + visible.length) % visible.length);
+        } else if (event.key === 'Enter') {
+            event.preventDefault();
+            onSelect(visible[active]);
+        }
+    };
+
+    const trimmedQuery = query.trim();
+
     return (
         <>
             <form
-                className='border-b px-3 py-2.5'
+                className='flex items-center gap-3 border-b px-4'
                 onSubmit={(event) => event.preventDefault()}>
-                <div className='relative'>
-                    <Search
-                        size={14}
-                        className='pointer-events-none absolute top-1/2 left-2.75 -translate-y-1/2 text-muted-foreground'
-                    />
-                    <Input
-                        {...register('query')}
-                        placeholder='Search ticker or name'
-                        autoFocus
-                        className='h-auto rounded-lg border-border bg-background py-2.25 pr-2.75 pl-8 font-sans text-[13px] shadow-none placeholder:text-muted-foreground/60 focus-visible:border-foreground focus-visible:ring-0'
-                    />
-                </div>
+                <Search
+                    size={16}
+                    aria-hidden
+                    className='shrink-0 text-muted-foreground'
+                />
+                <Input
+                    {...queryField}
+                    onChange={(event) => {
+                        setActiveIndex(0);
+                        return queryField.onChange(event);
+                    }}
+                    onKeyDown={handleKeyDown}
+                    role='combobox'
+                    aria-label='Search assets'
+                    aria-expanded={visible.length > 0}
+                    aria-controls={listId}
+                    aria-activedescendant={
+                        visible.length > 0 ? optionId(active) : undefined
+                    }
+                    autoComplete='off'
+                    autoCorrect='off'
+                    spellCheck={false}
+                    placeholder='Search ticker or company'
+                    autoFocus
+                    className='h-14 border-0 bg-transparent px-0 text-base shadow-none placeholder:text-muted-foreground/70 focus-visible:border-0 focus-visible:ring-0 md:text-[15px] dark:bg-transparent'
+                />
             </form>
 
             <div className='p-2'>
                 {status.type === 'error' ? (
-                    <p className='px-2 py-8 text-center text-[12px] text-destructive'>
+                    <p
+                        role='alert'
+                        className='px-2 py-10 text-center text-[13px] text-destructive'>
                         {status.message}
                     </p>
                 ) : status.type === 'loading' ? (
-                    <div className='flex items-center justify-center gap-2 px-2 py-8 text-[12px] text-muted-foreground'>
+                    <div className='flex items-center justify-center gap-2 px-2 py-10 text-[13px] text-muted-foreground'>
                         <Loader2 size={14} className='animate-spin' />
                         Searching…
                     </div>
                 ) : visible.length === 0 ? (
-                    <p className='px-2 py-8 text-center text-[12px] text-muted-foreground'>
-                        {query.trim()
-                            ? `No assets match "${query.trim()}".`
+                    <p className='px-2 py-10 text-center text-[13px] text-muted-foreground'>
+                        {trimmedQuery
+                            ? `No assets match "${trimmedQuery}".`
                             : emptyMessage}
                     </p>
                 ) : (
-                    <div className='flex max-h-96 flex-col overflow-y-auto'>
-                        {visible.map((asset) => (
-                            <button
-                                key={asset.t}
-                                type='button'
-                                onClick={() => onSelect(asset)}
-                                className='flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-left transition-colors hover:bg-accent'>
-                                <AvatarBadge t={asset.t} cat={asset.cat} />
-                                <div className='min-w-0 flex-1'>
-                                    <div className='truncate text-[13px] font-semibold'>
-                                        {asset.name}
-                                    </div>
-                                    <div className='text-[11.5px] text-muted-foreground'>
-                                        {asset.t} ·{' '}
-                                        <span className='font-mono'>
+                    <>
+                        <div className='px-2.5 pt-1 pb-1.5 font-mono text-[10.5px] font-medium uppercase tracking-[0.12em] text-muted-foreground'>
+                            {trimmedQuery
+                                ? `Results · ${visible.length}`
+                                : 'Suggested'}
+                        </div>
+                        <ul
+                            ref={listRef}
+                            id={listId}
+                            role='listbox'
+                            aria-label='Assets'
+                            className='flex max-h-[min(24rem,55svh)] flex-col gap-px overflow-y-auto'>
+                            {visible.map((asset, index) => (
+                                <li
+                                    key={asset.t}
+                                    id={optionId(index)}
+                                    role='option'
+                                    aria-selected={index === active}>
+                                    <button
+                                        type='button'
+                                        tabIndex={-1}
+                                        onClick={() => onSelect(asset)}
+                                        onMouseMove={() =>
+                                            index !== active &&
+                                            setActiveIndex(index)
+                                        }
+                                        className={cn(
+                                            'flex w-full items-center gap-3 rounded-lg px-2.5 py-2.5 text-left transition-colors duration-150',
+                                            index === active && 'bg-muted',
+                                        )}>
+                                        <AvatarBadge
+                                            t={asset.t}
+                                            cat={asset.cat}
+                                        />
+                                        <div className='min-w-0 flex-1'>
+                                            <div className='flex items-baseline gap-2'>
+                                                <span className='font-mono text-[13px] font-semibold'>
+                                                    {asset.t}
+                                                </span>
+                                                <span className='font-mono text-[10.5px] uppercase tracking-wider text-muted-foreground'>
+                                                    {CATEGORY_LABEL[
+                                                        asset.cat
+                                                    ] ?? asset.cat}
+                                                </span>
+                                            </div>
+                                            <div className='truncate text-[12.5px] text-muted-foreground'>
+                                                {asset.name}
+                                            </div>
+                                        </div>
+                                        <span className='font-mono text-[12.5px] tabular-nums'>
                                             {asset.price != null
                                                 ? fmtCurrency(
                                                       asset.price,
@@ -160,13 +260,29 @@ export function AssetSearchField({
                                                   )
                                                 : '—'}
                                         </span>
-                                    </div>
-                                </div>
-                                {actionIcon}
-                            </button>
-                        ))}
-                    </div>
+                                        {actionIcon}
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    </>
                 )}
+            </div>
+
+            <div className='hidden items-center gap-4 border-t px-4 py-2.5 text-[11.5px] text-muted-foreground sm:flex'>
+                <span className='flex items-center gap-1.5'>
+                    <Kbd>↑</Kbd>
+                    <Kbd>↓</Kbd>
+                    Navigate
+                </span>
+                <span className='flex items-center gap-1.5'>
+                    <Kbd>↵</Kbd>
+                    {enterLabel}
+                </span>
+                <span className='ml-auto flex items-center gap-1.5'>
+                    <Kbd>Esc</Kbd>
+                    Close
+                </span>
             </div>
         </>
     );

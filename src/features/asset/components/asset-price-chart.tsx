@@ -23,7 +23,7 @@ export default function AssetPriceChart({
     currency,
     initialRange,
     initialData,
-    height = 300,
+    height = 320,
 }: {
     ticker: string;
     currency: string;
@@ -53,13 +53,18 @@ export default function AssetPriceChart({
     const gradId = `grad-${ticker}`;
 
     return (
-        <Card className='p-5'>
-            <div className='mb-1.5 flex flex-wrap items-start justify-between gap-3'>
+        <Card className='gap-5 p-5 md:p-6'>
+            <div className='flex flex-wrap items-start justify-between gap-3'>
                 <div>
-                    <div className='font-mono text-2xl font-bold tracking-tight'>
+                    <div className='mb-1 font-mono text-2xl font-semibold tracking-tight tabular-nums'>
                         {fmtCurrency(endValue, currency)}
                     </div>
-                    <Delta value={changePct} />
+                    <div className='flex items-center gap-2'>
+                        <Delta value={changePct} />
+                        <span className='font-mono text-[11.5px] uppercase tracking-wider text-muted-foreground'>
+                            {range}
+                        </span>
+                    </div>
                 </div>
                 <RangeTabs value={range} onChange={handleRangeChange} />
             </div>
@@ -83,7 +88,7 @@ export default function AssetPriceChart({
                                 <stop
                                     offset='0%'
                                     stopColor={stroke}
-                                    stopOpacity={0.16}
+                                    stopOpacity={0.1}
                                 />
                                 <stop
                                     offset='100%'
@@ -98,7 +103,7 @@ export default function AssetPriceChart({
                             cursor={{ stroke: 'var(--border)', strokeWidth: 1 }}
                             content={({ active, payload }) =>
                                 active && payload && payload.length ? (
-                                    <div className='rounded-md bg-foreground px-2.5 py-1.5 font-mono text-xs font-semibold text-background'>
+                                    <div className='rounded-md bg-foreground px-2.5 py-1.5 font-mono text-xs font-medium tabular-nums text-background'>
                                         {fmtCurrency(
                                             payload[0].value as number,
                                             currency,
@@ -111,7 +116,7 @@ export default function AssetPriceChart({
                             type='monotone'
                             dataKey='v'
                             stroke={stroke}
-                            strokeWidth={2}
+                            strokeWidth={1.5}
                             fill={`url(#${gradId})`}
                         />
                     </AreaChart>

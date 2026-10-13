@@ -29,7 +29,7 @@ export function HoldingsPreview() {
                 <CardAction>
                     <Link
                         href='/portfolio'
-                        className='text-[12.5px] font-medium text-muted-foreground hover:text-foreground'>
+                        className='text-[13px] font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline'>
                         View all
                     </Link>
                 </CardAction>
@@ -39,21 +39,21 @@ export function HoldingsPreview() {
                     {PREVIEW_HOLDINGS.map((h) => (
                         <li
                             key={h.t}
-                            className='flex cursor-pointer items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0'
+                            className='-mx-2 flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-3 transition-colors duration-150 hover:bg-muted/60'
                             onClick={() => router.push(`/asset/${h.t}`)}>
                             <div className='flex min-w-0 items-center gap-2.5'>
                                 <AvatarBadge t={h.t} cat={h.cat} />
                                 <div className='min-w-0'>
-                                    <div className='truncate text-[13px] font-semibold'>
-                                        {h.name}
-                                    </div>
-                                    <div className='text-[11.5px] text-muted-foreground'>
+                                    <div className='font-mono text-[13px] font-semibold'>
                                         {h.t}
+                                    </div>
+                                    <div className='truncate text-[12px] text-muted-foreground'>
+                                        {h.name}
                                     </div>
                                 </div>
                             </div>
                             <div className='shrink-0 text-right'>
-                                <div className='font-mono text-[13px] font-semibold'>
+                                <div className='font-mono text-[13px] font-semibold tabular-nums'>
                                     {fmtEUR(h.value)}
                                 </div>
                                 <div className='mt-0.5 flex items-center justify-end gap-1.5'>
