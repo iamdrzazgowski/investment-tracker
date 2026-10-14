@@ -17,6 +17,7 @@ import {
     MOBILE_TABS,
 } from '@/components/shared/nav-items';
 import { useGlobalSearch } from '@/components/shared/global-search';
+import { LogoutButton } from '@/components/shared/logout-button';
 import { cn } from '@/lib/utils';
 
 const tabClass =
@@ -120,18 +121,24 @@ export function MobileNav() {
                             );
                         })}
                     </ul>
-                    <div className='flex items-center gap-3 border-t border-border px-5 py-4'>
-                        <span className='flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card font-mono text-[11px] font-semibold'>
-                            MK
-                        </span>
-                        <div>
-                            <div className='text-[13px] font-semibold'>
-                                Marta K.
-                            </div>
-                            <div className='text-[11.5px] text-muted-foreground'>
-                                Personal account
+                    <div className='border-t border-border px-2 py-2'>
+                        <div className='flex items-center gap-3 px-3 py-2'>
+                            <span className='flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card font-mono text-[11px] font-semibold'>
+                                MK
+                            </span>
+                            <div>
+                                <div className='text-[13px] font-semibold'>
+                                    Marta K.
+                                </div>
+                                <div className='text-[11.5px] text-muted-foreground'>
+                                    Personal account
+                                </div>
                             </div>
                         </div>
+                        <LogoutButton
+                            className='px-3 py-3.5 text-[15px]'
+                            onDone={() => setMoreOpen(false)}
+                        />
                     </div>
                 </SheetContent>
             </Sheet>

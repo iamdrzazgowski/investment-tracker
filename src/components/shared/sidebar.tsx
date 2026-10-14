@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { isNavActive, NAV } from '@/components/shared/nav-items';
 import { cn } from '@/lib/utils';
 import { NordwellLogo } from '@/components/shared/nordwell-logo';
+import { LogoutButton } from '@/components/shared/logout-button';
 
 export function Sidebar() {
     const pathname = usePathname();
@@ -38,7 +39,10 @@ export function Sidebar() {
                 })}
             </nav>
 
-            <div className='mt-auto flex items-center gap-3 border-t border-border px-2 pt-5'>
+            <div className='mt-auto'>
+                <LogoutButton />
+            </div>
+            <div className='mt-3 flex items-center gap-3 border-t border-border px-2 pt-5'>
                 <span className='flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card font-mono text-[11px] font-semibold'>
                     MK
                 </span>
