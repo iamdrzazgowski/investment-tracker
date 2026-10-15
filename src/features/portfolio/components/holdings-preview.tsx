@@ -7,19 +7,18 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/componen
 import { AvatarBadge } from '@/components/shared/avatar-badge';
 import { Delta } from '@/components/shared/delta';
 import { fmtEUR, fmtSigned } from '@/lib/format';
-import { INITIAL_HOLDINGS } from '@/lib/data';
+import type { Category } from '@/lib/data';
 
-const PREVIEW_HOLDINGS = INITIAL_HOLDINGS.map((h) => {
-    const value = h.shares * h.price;
-    const invested = h.shares * h.avg;
-    const pl = value - invested;
-    const plPct = invested > 0 ? (pl / invested) * 100 : 0;
-    return { ...h, value, pl, plPct };
-})
-    .toSorted((a, b) => b.value - a.value)
-    .slice(0, 5);
+export interface HoldingPreviewItem {
+    t: string;
+    name: string;
+    cat: Category;
+    value: number;
+    pl: number;
+    plPct: number;
+}
 
-export function HoldingsPreview() {
+export function HoldingsPreview({ holdings }: { holdings: HoldingPreviewItem[] }) {
     const router = useRouter();
 
     return (
@@ -35,8 +34,14 @@ export function HoldingsPreview() {
                 </CardAction>
             </CardHeader>
             <CardContent className='pt-0'>
-                <ul className='divide-y divide-border'>
-                    {PREVIEW_HOLDINGS.map((h) => (
+                {holdings.length === 0 ? (
+                    <p className='py-6 text-center text-sm text-muted-foreground'>
+                        No holdings yet. Place your first order from the
+                        Portfolio page.
+                    </p>
+                ) : (
+                    <ul className='divide-y divide-border'>
+                        {holdings.map((h) => (
                         <li
                             key={h.t}
                             className='-mx-2 flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-3 transition-colors duration-150 hover:bg-muted/60'
@@ -64,8 +69,9 @@ export function HoldingsPreview() {
                                 </div>
                             </div>
                         </li>
-                    ))}
-                </ul>
+                        ))}
+                    </ul>
+                )}
             </CardContent>
         </Card>
     );

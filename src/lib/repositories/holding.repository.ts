@@ -7,6 +7,14 @@ export function getHoldingForAsset(portfolioId: string, assetId: string) {
     });
 }
 
+export function getHoldingsByPortfolio(portfolioId: string) {
+    return prisma.holding.findMany({
+        where: { portfolioId },
+        include: { asset: true },
+        orderBy: { updatedAt: 'desc' },
+    });
+}
+
 export async function buyAsset(
     portfolioId: string,
     assetId: string,

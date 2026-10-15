@@ -8,8 +8,44 @@ import { RecentTransactions } from '@/features/portfolio/components/recent-trans
 import { StatRow } from '@/features/portfolio/components/stat-row';
 import { TopMovers } from '@/features/portfolio/components/top-movers';
 import { fmtEUR, fmtSigned } from '@/lib/format';
+import { requirePortfolio } from '@/lib/auth-helpers';
+import { getHoldingsByPortfolio } from '@/lib/repositories/holding.repository';
+import type { Category } from '@/lib/data';
+import type { HoldingPreviewItem } from '@/features/portfolio/components/holdings-preview';
 
-export default function DashboardPage() {
+function toCategory(category: string): Category {
+    if (category === 'ETF') return 'ETFs';
+    if (category === 'CRYPTO') return 'Crypto';
+    return 'Stocks';
+}
+
+export default async function DashboardPage() {
+    const portfolio = await requirePortfolio();
+    const dbHoldings = await getHoldingsByPortfolio(portfolio.id);
+
+    const previewHoldings: HoldingPreviewItem[] = dbHoldings
+        .map((h) => {
+            const shares = h.shares.toNumber();
+            const avg = h.avgCost.toNumber();
+            const price =
+                h.asset.lastPrice != null
+                    ? Number(h.asset.lastPrice)
+                    : avg;
+            const value = shares * price;
+            const invested = shares * avg;
+            const pl = value - invested;
+            const plPct = invested > 0 ? (pl / invested) * 100 : 0;
+            return {
+                t: h.asset.ticker,
+                name: h.asset.name,
+                cat: toCategory(h.asset.category),
+                value,
+                pl,
+                plPct,
+            };
+        })
+        .toSorted((a, b) => b.value - a.value)
+        .slice(0, 5);
     return (
         <AppShell>
             <section
@@ -40,7 +76,7 @@ export default function DashboardPage() {
                 <StatRow totals={0} />
 
                 <div className='grid gap-6 md:gap-8 lg:grid-cols-[1.55fr_1fr]'>
-                    <HoldingsPreview />
+                    <HoldingsPreview holdings={previewHoldings} />
                     <AllocationDonut />
                 </div>
 
