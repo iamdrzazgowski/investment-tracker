@@ -15,6 +15,7 @@ import type { Category } from '@/lib/data';
 import type { HoldingPreviewItem } from '@/features/portfolio/components/holdings-preview';
 import type { RecentTransactionItem } from '@/features/portfolio/components/recent-transactions';
 import type { TopMoverItem } from '@/features/portfolio/components/top-movers';
+import type { AllocationSlice } from '@/features/portfolio/components/allocation-donut';
 
 function toCategory(category: string): Category {
     if (category === 'ETF') return 'ETFs';
@@ -77,6 +78,35 @@ export default async function DashboardPage() {
             ? Number(h.asset.dayChangePercent)
             : 0,
     }));
+
+    const cash = portfolio.cashBalance.toNumber();
+    const valueByCat = new Map<Category, number>();
+    for (const h of dbHoldings) {
+        const shares = h.shares.toNumber();
+        const price =
+            h.asset.lastPrice != null
+                ? Number(h.asset.lastPrice)
+                : h.avgCost.toNumber();
+        const cat = toCategory(h.asset.category);
+        valueByCat.set(cat, (valueByCat.get(cat) ?? 0) + shares * price);
+    }
+    valueByCat.set('Cash', cash);
+    const allocationTotal = [...valueByCat.values()].reduce(
+        (s, v) => s + v,
+        0,
+    );
+    const allocation: AllocationSlice[] = (
+        ['Stocks', 'ETFs', 'Crypto', 'Cash'] as Category[]
+    )
+        .map((name) => {
+            const value = valueByCat.get(name) ?? 0;
+            return {
+                name,
+                value,
+                pct: allocationTotal > 0 ? (value / allocationTotal) * 100 : 0,
+            };
+        })
+        .filter((a) => a.value > 0);
     return (
         <AppShell>
             <section
@@ -108,7 +138,7 @@ export default async function DashboardPage() {
 
                 <div className='grid gap-6 md:gap-8 lg:grid-cols-[1.55fr_1fr]'>
                     <HoldingsPreview holdings={previewHoldings} />
-                    <AllocationDonut />
+                    <AllocationDonut allocation={allocation} />
                 </div>
 
                 <div className='grid gap-6 md:gap-8 lg:grid-cols-[1.55fr_1fr]'>

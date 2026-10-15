@@ -1,27 +1,43 @@
-'use client';
-
 import { AppShell } from '@/components/shared/app-shell';
-import * as React from 'react';
-
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CategoryBreakdown } from '@/features/portfolio/components/category-breakdown';
-import { HoldingsTable } from '@/features/portfolio/components/holdings-table';
 import { NewOrderDialog } from '@/features/portfolio/components/new-order-dialog';
+import { PortfolioHoldingsFilter } from '@/features/portfolio/components/portfolio-holdings-filter';
 import { PageHeader } from '@/components/shared/page-header';
+import { requirePortfolio } from '@/lib/auth-helpers';
+import { getHoldingsByPortfolio } from '@/lib/repositories/holding.repository';
+import type { Category, EnrichedHolding } from '@/lib/data';
 
-import { INITIAL_CASH, INITIAL_HOLDINGS, type Category } from '@/lib/data';
+function toCategory(category: string): Category {
+    if (category === 'ETF') return 'ETFs';
+    if (category === 'CRYPTO') return 'Crypto';
+    return 'Stocks';
+}
 
-export default function PortfolioPage() {
-    const [filter, setFilter] = React.useState<Category | 'All'>('All');
+export default async function PortfolioPage() {
+    const portfolio = await requirePortfolio();
+    const dbHoldings = await getHoldingsByPortfolio(portfolio.id);
 
-    const enriched = INITIAL_HOLDINGS.map((holding) => {
-        const value = holding.shares * holding.price;
-        const invested = holding.shares * holding.avg;
+    const enriched: EnrichedHolding[] = dbHoldings.map((h, i) => {
+        const shares = h.shares.toNumber();
+        const avg = h.avgCost.toNumber();
+        const price =
+            h.asset.lastPrice != null ? Number(h.asset.lastPrice) : avg;
+        const value = shares * price;
+        const invested = shares * avg;
         const pl = value - invested;
         const plPct = invested > 0 ? (pl / invested) * 100 : 0;
 
         return {
-            ...holding,
+            t: h.asset.ticker,
+            name: h.asset.name,
+            cat: toCategory(h.asset.category),
+            price,
+            day: h.asset.dayChangePercent
+                ? Number(h.asset.dayChangePercent)
+                : 0,
+            seed: i,
+            shares,
+            avg,
             value,
             invested,
             pl,
@@ -29,7 +45,7 @@ export default function PortfolioPage() {
         };
     });
 
-    const cash = INITIAL_CASH;
+    const cash = portfolio.cashBalance.toNumber();
 
     const holdingsValue = enriched.reduce(
         (sum, holding) => sum + holding.value,
@@ -37,15 +53,6 @@ export default function PortfolioPage() {
     );
 
     const totalValue = holdingsValue + cash;
-
-    const totals = {
-        totalValue,
-        holdingsValue,
-        cash,
-    };
-
-    const rows =
-        filter === 'All' ? enriched : enriched.filter((h) => h.cat === filter);
 
     return (
         <AppShell>
@@ -59,24 +66,11 @@ export default function PortfolioPage() {
                 <CategoryBreakdown
                     enriched={enriched}
                     cash={cash}
-                    totalValue={totals.totalValue}
+                    totalValue={totalValue}
                 />
             </div>
 
-            <Tabs
-                value={filter}
-                onValueChange={(v) => setFilter(v as Category | 'All')}
-                className='mb-6'>
-                <TabsList>
-                    {(['All', 'Stocks', 'ETFs', 'Crypto'] as const).map((c) => (
-                        <TabsTrigger key={c} value={c}>
-                            {c}
-                        </TabsTrigger>
-                    ))}
-                </TabsList>
-            </Tabs>
-
-            <HoldingsTable rows={rows} />
+            <PortfolioHoldingsFilter enriched={enriched} />
         </AppShell>
     );
 }
