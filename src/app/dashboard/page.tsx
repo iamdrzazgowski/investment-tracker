@@ -10,8 +10,11 @@ import { TopMovers } from '@/features/portfolio/components/top-movers';
 import { fmtEUR, fmtSigned } from '@/lib/format';
 import { requirePortfolio } from '@/lib/auth-helpers';
 import { getHoldingsByPortfolio } from '@/lib/repositories/holding.repository';
+import { getTransactionsForPortfolio } from '@/lib/repositories/transaction.repository';
 import type { Category } from '@/lib/data';
 import type { HoldingPreviewItem } from '@/features/portfolio/components/holdings-preview';
+import type { RecentTransactionItem } from '@/features/portfolio/components/recent-transactions';
+import type { TopMoverItem } from '@/features/portfolio/components/top-movers';
 
 function toCategory(category: string): Category {
     if (category === 'ETF') return 'ETFs';
@@ -21,7 +24,10 @@ function toCategory(category: string): Category {
 
 export default async function DashboardPage() {
     const portfolio = await requirePortfolio();
-    const dbHoldings = await getHoldingsByPortfolio(portfolio.id);
+    const [dbHoldings, dbTransactions] = await Promise.all([
+        getHoldingsByPortfolio(portfolio.id),
+        getTransactionsForPortfolio(portfolio.id, 5),
+    ]);
 
     const previewHoldings: HoldingPreviewItem[] = dbHoldings
         .map((h) => {
@@ -46,6 +52,31 @@ export default async function DashboardPage() {
         })
         .toSorted((a, b) => b.value - a.value)
         .slice(0, 5);
+
+    const previewTransactions: RecentTransactionItem[] = dbTransactions.map(
+        (tx) => ({
+            id: tx.id,
+            date: tx.executedAt.toISOString(),
+            t: tx.asset.ticker,
+            name: tx.asset.name,
+            cat: toCategory(tx.asset.category),
+            type: tx.type === 'BUY' ? 'buy' : 'sell',
+            qty: tx.quantity.toNumber(),
+            price: tx.price.toNumber(),
+        }),
+    );
+
+    const topMovers: TopMoverItem[] = dbHoldings.map((h) => ({
+        t: h.asset.ticker,
+        cat: toCategory(h.asset.category),
+        price:
+            h.asset.lastPrice != null
+                ? Number(h.asset.lastPrice)
+                : h.avgCost.toNumber(),
+        day: h.asset.dayChangePercent
+            ? Number(h.asset.dayChangePercent)
+            : 0,
+    }));
     return (
         <AppShell>
             <section
@@ -81,8 +112,8 @@ export default async function DashboardPage() {
                 </div>
 
                 <div className='grid gap-6 md:gap-8 lg:grid-cols-[1.55fr_1fr]'>
-                    <RecentTransactions />
-                    <TopMovers />
+                    <RecentTransactions transactions={previewTransactions} />
+                    <TopMovers movers={topMovers} />
                 </div>
             </div>
         </AppShell>

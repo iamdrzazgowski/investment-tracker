@@ -6,55 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AvatarBadge } from '@/components/shared/avatar-badge';
 import { Delta } from '@/components/shared/delta';
 import { fmtEUR } from '@/lib/format';
+import type { Category } from '@/lib/data';
 
-const TOP_MOVERS = [
-    {
-        t: 'BTC',
-        cat: 'Crypto' as const,
-        price: 61200,
-        day: 3.62,
-    },
-    {
-        t: 'NVDA',
-        cat: 'Stocks' as const,
-        price: 138.75,
-        day: 2.14,
-    },
-    {
-        t: 'ETH',
-        cat: 'Crypto' as const,
-        price: 3380,
-        day: 1.95,
-    },
-    {
-        t: 'NFLX',
-        cat: 'Stocks' as const,
-        price: 940.55,
-        day: -1.24,
-    },
-    {
-        t: 'META',
-        cat: 'Stocks' as const,
-        price: 612.8,
-        day: -0.68,
-    },
-    {
-        t: 'MSFT',
-        cat: 'Stocks' as const,
-        price: 428.9,
-        day: -0.32,
-    },
-];
+export interface TopMoverItem {
+    t: string;
+    cat: Category;
+    price: number;
+    day: number;
+}
 
-type TopMover = (typeof TOP_MOVERS)[number];
+type TopMover = TopMoverItem;
 
 function Col({
     title,
     rows,
+    emptyMessage,
     onSelect,
 }: {
     title: string;
     rows: TopMover[];
+    emptyMessage: string;
     onSelect: (ticker: string) => void;
 }) {
     return (
@@ -63,8 +34,13 @@ function Col({
                 {title}
             </div>
 
-            <ul className='divide-y divide-border'>
-                {rows.map((h) => (
+            {rows.length === 0 ? (
+                <div className='rounded-md border border-dashed border-border px-3 py-6 text-center text-[12.5px] text-muted-foreground'>
+                    {emptyMessage}
+                </div>
+            ) : (
+                <ul className='divide-y divide-border'>
+                    {rows.map((h) => (
                     <li
                         key={h.t}
                         className='-mx-2 flex cursor-pointer items-center justify-between rounded-md px-2 py-2.5 transition-colors duration-150 hover:bg-muted/60'
@@ -85,18 +61,37 @@ function Col({
 
                         <Delta value={h.day} size='sm' />
                     </li>
-                ))}
-            </ul>
+                    ))}
+                </ul>
+            )}
         </div>
     );
 }
 
-export function TopMovers() {
+export function TopMovers({ movers }: { movers: TopMoverItem[] }) {
     const router = useRouter();
-    const sorted = TOP_MOVERS.toSorted((a, b) => b.day - a.day);
+    const sorted = movers.toSorted((a, b) => b.day - a.day);
 
-    const gainers = sorted.slice(0, 3);
-    const losers = sorted.slice(-3).reverse();
+    const gainers = sorted.filter((m) => m.day > 0).slice(0, 3);
+    const losers = sorted
+        .filter((m) => m.day < 0)
+        .slice(-3)
+        .reverse();
+
+    if (movers.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Top movers today</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className='py-6 text-center text-sm text-muted-foreground'>
+                        No market data yet.
+                    </p>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
         <Card>
@@ -108,11 +103,13 @@ export function TopMovers() {
                 <Col
                     title='Gainers'
                     rows={gainers}
+                    emptyMessage='No gainers today.'
                     onSelect={(t) => router.push(`/asset/${t}`)}
                 />
                 <Col
                     title='Losers'
                     rows={losers}
+                    emptyMessage='No losers today.'
                     onSelect={(t) => router.push(`/asset/${t}`)}
                 />
             </CardContent>

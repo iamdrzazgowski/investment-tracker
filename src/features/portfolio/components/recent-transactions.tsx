@@ -5,12 +5,25 @@ import Link from 'next/link';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AvatarBadge } from '@/components/shared/avatar-badge';
-import { CATALOG, INITIAL_TRANSACTIONS } from '@/lib/data';
+import type { Category } from '@/lib/data';
 import { fmtEUR, fmtNum } from '@/lib/format';
 
-const PREVIEW_TRANSACTIONS = INITIAL_TRANSACTIONS.slice(0, 5);
+export interface RecentTransactionItem {
+    id: string;
+    date: string;
+    t: string;
+    name: string;
+    cat: Category;
+    type: 'buy' | 'sell';
+    qty: number;
+    price: number;
+}
 
-export function RecentTransactions() {
+export function RecentTransactions({
+    transactions,
+}: {
+    transactions: RecentTransactionItem[];
+}) {
     return (
         <Card>
             <CardHeader>
@@ -24,19 +37,23 @@ export function RecentTransactions() {
                 </CardAction>
             </CardHeader>
             <CardContent className='pt-0'>
-                <ul className='divide-y divide-border'>
-                    {PREVIEW_TRANSACTIONS.map((tx) => {
-                        const meta = CATALOG.find((c) => c.t === tx.t);
-                        const isCrypto = meta?.cat === 'Crypto';
+                {transactions.length === 0 ? (
+                    <p className='py-6 text-center text-sm text-muted-foreground'>
+                        No transactions yet.
+                    </p>
+                ) : (
+                    <ul className='divide-y divide-border'>
+                        {transactions.map((tx) => {
+                            const isCrypto = tx.cat === 'Crypto';
 
-                        return (
+                            return (
                             <li
                                 key={tx.id}
                                 className='flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0'>
                                 <div className='flex min-w-0 items-center gap-2.5'>
                                     <AvatarBadge
                                         t={tx.t}
-                                        cat={meta?.cat ?? 'Stocks'}
+                                        cat={tx.cat}
                                         size='sm'
                                     />
                                     <div className='min-w-0'>
@@ -44,8 +61,10 @@ export function RecentTransactions() {
                                             {tx.name}
                                         </div>
                                         <div className='font-mono text-[11.5px] text-muted-foreground'>
-                                            {tx.date} ·{' '}
-                                            {fmtNum(tx.qty, isCrypto ? 2 : 0)}{' '}
+                                            {new Date(
+                                                tx.date,
+                                            ).toLocaleDateString('en-CA')}{' '}
+                                            · {fmtNum(tx.qty, isCrypto ? 2 : 0)}{' '}
                                             {tx.t}
                                         </div>
                                     </div>
@@ -64,9 +83,10 @@ export function RecentTransactions() {
                                     </Badge>
                                 </div>
                             </li>
-                        );
-                    })}
-                </ul>
+                            );
+                        })}
+                    </ul>
+                )}
             </CardContent>
         </Card>
     );
