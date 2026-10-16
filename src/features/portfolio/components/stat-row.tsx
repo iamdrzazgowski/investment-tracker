@@ -1,21 +1,33 @@
 import { Delta } from '@/components/shared/delta';
-import { fmtEUR, fmtPct, fmtSigned } from '@/lib/format';
+import { fmtCurrency, fmtPct, fmtSignedCurrency } from '@/lib/format';
 
-export function StatRow({ totals: _totals }: { totals?: unknown }) {
-    void _totals;
+export interface PortfolioTotals {
+    invested: number;
+    pl: number;
+    plPct: number;
+    dayChange: number;
+    dayChangePct: number;
+    currency: string;
+}
+
+export function StatRow({ totals }: { totals: PortfolioTotals }) {
+    const { currency } = totals;
     const stats = [
-        { label: 'Total invested', value: fmtEUR(4000) },
+        {
+            label: 'Total invested',
+            value: fmtCurrency(totals.invested, currency),
+        },
         {
             label: 'Total profit / loss',
-            value: fmtSigned(1000),
-            delta: -10,
+            value: fmtSignedCurrency(totals.pl, currency),
+            delta: totals.plPct,
         },
         {
             label: "Today's change",
-            value: fmtSigned(1000),
-            delta: 7,
+            value: fmtSignedCurrency(totals.dayChange, currency),
+            delta: totals.dayChangePct,
         },
-        { label: 'Total return', value: fmtPct(7) },
+        { label: 'Total return', value: fmtPct(totals.plPct) },
     ];
 
     return (

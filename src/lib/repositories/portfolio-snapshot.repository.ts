@@ -1,6 +1,6 @@
 import 'server-only';
 import { prisma } from '@/lib/prisma';
-import { getFxRate } from '@/lib/market-data/fx';
+import { valuePortfolio } from '@/lib/portfolio-valuation';
 
 export interface PortfolioSnapshotResult {
     portfolioId: string;
@@ -9,6 +9,13 @@ export interface PortfolioSnapshotResult {
     message?: string;
 }
 
+/**
+ * Zapisuje snapshot wartości każdego portfela (wycena: `valuePortfolio`).
+ *
+ * Gdy brakuje kursu FX, snapshot tego portfela jest pomijany (zapis
+ * zaniżonej/zawyżonej wartości zepsułby wykres), a błąd trafia do wyniku.
+ * Błąd jednego portfela nie blokuje pozostałych.
+ */
 export async function snapshotAllPortfolios(): Promise<
     PortfolioSnapshotResult[]
 > {
@@ -18,43 +25,12 @@ export async function snapshotAllPortfolios(): Promise<
     if (portfolios.length === 0) return [];
 
     const capturedAt = new Date();
-    const fxCache = new Map<string, Promise<number | null>>();
-    const fx = (from: string, to: string) => {
-        const key = `${from}->${to}`;
-        let rate = fxCache.get(key);
-        if (!rate) {
-            rate = getFxRate(from, to);
-            fxCache.set(key, rate);
-        }
-        return rate;
-    };
-
     const results: PortfolioSnapshotResult[] = [];
 
     for (const portfolio of portfolios) {
         try {
-            const cashValue = portfolio.cashBalance.toNumber();
-            let holdingsValue = 0;
-            let investedValue = 0;
-
-            for (const holding of portfolio.holdings) {
-                const { asset } = holding;
-                const rate = await fx(asset.currency, portfolio.baseCurrency);
-                if (rate == null || rate <= 0) {
-                    throw new Error(
-                        `Exchange rate unavailable for ${asset.currency} to ${portfolio.baseCurrency}`,
-                    );
-                }
-
-                const shares = holding.shares.toNumber();
-                const price =
-                    asset.lastPrice?.toNumber() ?? holding.avgCost.toNumber();
-
-                holdingsValue += shares * price * rate;
-                investedValue += shares * holding.avgCost.toNumber() * rate;
-            }
-
-            const totalValue = holdingsValue + cashValue;
+            const { totalValue, investedValue, cashValue } =
+                await valuePortfolio(portfolio);
 
             await prisma.portfolioSnapshot.create({
                 data: {
@@ -82,4 +58,24 @@ export async function snapshotAllPortfolios(): Promise<
     }
 
     return results;
+}
+
+export interface PortfolioSnapshotPoint {
+    /** Unix ms */
+    t: number;
+    v: number;
+}
+
+export async function getSnapshotPoints(
+    portfolioId: string,
+): Promise<PortfolioSnapshotPoint[]> {
+    const snapshots = await prisma.portfolioSnapshot.findMany({
+        where: { portfolioId },
+        orderBy: { capturedAt: 'asc' },
+        select: { capturedAt: true, totalValue: true },
+    });
+    return snapshots.map((s) => ({
+        t: s.capturedAt.getTime(),
+        v: s.totalValue.toNumber(),
+    }));
 }

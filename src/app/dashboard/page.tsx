@@ -7,15 +7,18 @@ import { PerformanceChart } from '@/features/portfolio/components/performance-ch
 import { RecentTransactions } from '@/features/portfolio/components/recent-transactions';
 import { StatRow } from '@/features/portfolio/components/stat-row';
 import { TopMovers } from '@/features/portfolio/components/top-movers';
-import { fmtEUR, fmtSigned } from '@/lib/format';
+import { fmtCurrency, fmtSignedCurrency } from '@/lib/format';
 import { requirePortfolio } from '@/lib/auth-helpers';
+import { valuePortfolio } from '@/lib/portfolio-valuation';
 import { getHoldingsByPortfolio } from '@/lib/repositories/holding.repository';
+import { getSnapshotPoints } from '@/lib/repositories/portfolio-snapshot.repository';
 import { getTransactionsForPortfolio } from '@/lib/repositories/transaction.repository';
 import type { Category } from '@/lib/data';
 import type { HoldingPreviewItem } from '@/features/portfolio/components/holdings-preview';
 import type { RecentTransactionItem } from '@/features/portfolio/components/recent-transactions';
 import type { TopMoverItem } from '@/features/portfolio/components/top-movers';
 import type { AllocationSlice } from '@/features/portfolio/components/allocation-donut';
+import type { PerformancePoint } from '@/features/portfolio/components/performance-chart';
 
 function toCategory(category: string): Category {
     if (category === 'ETF') return 'ETFs';
@@ -23,12 +26,35 @@ function toCategory(category: string): Category {
     return 'Stocks';
 }
 
+// Wykres kończy się bieżącą wyceną, więc ma punkt "teraz" także zanim
+// cron zdąży zapisać pierwszy snapshot.
+function withLivePoint(
+    points: PerformancePoint[],
+    liveValue: number,
+): PerformancePoint[] {
+    return [...points, { t: Date.now(), v: liveValue }];
+}
+
 export default async function DashboardPage() {
     const portfolio = await requirePortfolio();
-    const [dbHoldings, dbTransactions] = await Promise.all([
+    const [dbHoldings, dbTransactions, snapshotPoints] = await Promise.all([
         getHoldingsByPortfolio(portfolio.id),
         getTransactionsForPortfolio(portfolio.id, 5),
+        getSnapshotPoints(portfolio.id),
     ]);
+
+    const valuation = await valuePortfolio(
+        { ...portfolio, holdings: dbHoldings },
+        { strictFx: false },
+    );
+    const currency = portfolio.baseCurrency;
+    const pl = valuation.holdingsValue - valuation.investedValue;
+    const plPct =
+        valuation.investedValue > 0 ? (pl / valuation.investedValue) * 100 : 0;
+    const previousTotal = valuation.totalValue - valuation.dayChangeValue;
+    const dayChangePct =
+        previousTotal > 0 ? (valuation.dayChangeValue / previousTotal) * 100 : 0;
+    const chartPoints = withLivePoint(snapshotPoints, valuation.totalValue);
 
     const previewHoldings: HoldingPreviewItem[] = dbHoldings
         .map((h) => {
@@ -119,12 +145,13 @@ export default async function DashboardPage() {
                         Portfolio value
                     </h1>
                     <div className='text-[44px] font-medium leading-none tracking-[-0.04em] tabular-nums md:text-[64px]'>
-                        {fmtEUR(3000)}
+                        {fmtCurrency(valuation.totalValue, currency)}
                     </div>
                     <div className='mt-4 flex items-center gap-3'>
-                        <Delta value={10} />
+                        <Delta value={dayChangePct} />
                         <span className='font-mono text-[13px] text-muted-foreground'>
-                            {fmtSigned(10)} today
+                            {fmtSignedCurrency(valuation.dayChangeValue, currency)}{' '}
+                            today
                         </span>
                     </div>
                 </div>
@@ -132,9 +159,22 @@ export default async function DashboardPage() {
             </section>
 
             <div className='space-y-6 md:space-y-8'>
-                <PerformanceChart seed={1} endValue={5000} showValue={false} />
+                <PerformanceChart
+                    points={chartPoints}
+                    currency={currency}
+                    showValue={false}
+                />
 
-                <StatRow totals={0} />
+                <StatRow
+                    totals={{
+                        invested: valuation.investedValue,
+                        pl,
+                        plPct,
+                        dayChange: valuation.dayChangeValue,
+                        dayChangePct,
+                        currency,
+                    }}
+                />
 
                 <div className='grid gap-6 md:gap-8 lg:grid-cols-[1.55fr_1fr]'>
                     <HoldingsPreview holdings={previewHoldings} />
