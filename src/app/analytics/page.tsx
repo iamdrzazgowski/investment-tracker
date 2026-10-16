@@ -1,17 +1,26 @@
-'use client';
-
 import { AppShell } from '@/components/shared/app-shell';
 import { BenchmarkChart } from '@/features/analytics/components/benchmark-chart';
-
 import { CategoryPerformanceChart } from '@/features/analytics/components/category-performance-chart';
 import { HoldingsRanked } from '@/features/analytics/components/holdings-ranked';
 import { MonthlyReturnsChart } from '@/features/analytics/components/monthly-returns-chart';
+import type { AnalyticsHolding } from '@/features/analytics/types';
 
 import { Delta } from '@/components/shared/delta';
 import { PageHeader } from '@/components/shared/page-header';
-import { fmtEUR, fmtPct } from '@/lib/format';
-
-import { INITIAL_CASH, INITIAL_HOLDINGS, type Category, type EnrichedHolding } from '@/lib/data';
+import {
+    buildPerformanceIndex,
+    monthlyReturns,
+    type ValueSample,
+} from '@/lib/analytics/performance';
+import { toCategory } from '@/lib/asset-category';
+import { requirePortfolio } from '@/lib/auth-helpers';
+import type { Category } from '@/lib/data';
+import { fmtCurrency, fmtPct } from '@/lib/format';
+import { BENCHMARK, getBenchmarkHistory } from '@/lib/market-data/benchmark';
+import { valuePortfolio } from '@/lib/portfolio-valuation';
+import { getHoldingsByPortfolio } from '@/lib/repositories/holding.repository';
+import { getSnapshotSamples } from '@/lib/repositories/portfolio-snapshot.repository';
+import { getTransactionTimes } from '@/lib/repositories/transaction.repository';
 
 const Stat = ({
     label,
@@ -41,33 +50,53 @@ const Stat = ({
     </div>
 );
 
-export default function AnalyticsPage() {
-    const enriched: EnrichedHolding[] = INITIAL_HOLDINGS.map((holding) => {
-        const value = holding.shares * holding.price;
-        const invested = holding.shares * holding.avg;
-        const pl = value - invested;
-        const plPct = invested > 0 ? (pl / invested) * 100 : 0;
+// Historia kończy się bieżącą wyceną, żeby indeks był aktualny także między
+// uruchomieniami crona.
+function withLiveSample(
+    samples: ValueSample[],
+    live: Omit<ValueSample, 't'>,
+): ValueSample[] {
+    return [...samples, { t: Date.now(), ...live }];
+}
 
+export default async function AnalyticsPage() {
+    const portfolio = await requirePortfolio();
+    const snapshotSamples = await getSnapshotSamples(portfolio.id);
+    const historyStart = snapshotSamples[0]?.t ?? null;
+
+    const [dbHoldings, transactionTimes, benchmark] =
+        await Promise.all([
+            getHoldingsByPortfolio(portfolio.id),
+            getTransactionTimes(portfolio.id),
+            getBenchmarkHistory(historyStart),
+        ]);
+
+    const valuation = await valuePortfolio(
+        { ...portfolio, holdings: dbHoldings },
+        { strictFx: false },
+    );
+    const currency = portfolio.baseCurrency;
+
+    const enriched: AnalyticsHolding[] = dbHoldings.map((h, i) => {
+        const { value, invested } = valuation.positions[i];
+        const pl = value - invested;
         return {
-            ...holding,
+            t: h.asset.ticker,
+            cat: toCategory(h.asset.category),
             value,
             invested,
             pl,
-            plPct,
+            plPct: invested > 0 ? (pl / invested) * 100 : 0,
         };
     });
 
-    let holdingsValue = 0;
-    let totalInvested = 0;
     let inProfit = 0;
-    let best: (typeof enriched)[number] | null = null;
-    let worst: (typeof enriched)[number] | null = null;
-    let largest: (typeof enriched)[number] | null = null;
+    let best: AnalyticsHolding | null = null;
+    let worst: AnalyticsHolding | null = null;
+    let largest: AnalyticsHolding | null = null;
     const valueByCategory = new Map<Category, number>();
 
     for (const holding of enriched) {
-        holdingsValue += holding.value;
-        totalInvested += holding.invested;
         if (holding.pl >= 0) inProfit += 1;
         if (!best || holding.plPct > best.plPct) best = holding;
         if (!worst || holding.plPct < worst.plPct) worst = holding;
@@ -78,42 +107,27 @@ export default function AnalyticsPage() {
         );
     }
 
-    const totalValue = holdingsValue + INITIAL_CASH;
+    const { totalValue, cashValue, holdingsValue, investedValue } = valuation;
+    const totalPL = holdingsValue - investedValue;
+    const totalPLPct = investedValue > 0 ? (totalPL / investedValue) * 100 : 0;
 
-    const totalPL = holdingsValue - totalInvested;
+    const diversification = (
+        ['Stocks', 'ETFs', 'Crypto'] as Category[]
+    ).filter((c) => (valueByCategory.get(c) ?? 0) > 0).length + (cashValue > 0 ? 1 : 0);
 
-    const totalPLPct = totalInvested > 0 ? (totalPL / totalInvested) * 100 : 0;
-
-    const totals = {
-        totalValue,
-        holdingsValue,
-        cash: INITIAL_CASH,
-        totalPL,
-        totalPLPct,
-    };
-
-    const allocation = (['Stocks', 'ETFs', 'Crypto', 'Cash'] as Category[]).map(
-        (category) => {
-            const value =
-                category === 'Cash'
-                    ? INITIAL_CASH
-                    : (valueByCategory.get(category) ?? 0);
-
-            return {
-                category,
-                value,
-                pct: totalValue > 0 ? (value / totalValue) * 100 : 0,
-            };
-        },
-    );
-
-    const diversification = allocation.filter((a) => a.value > 0).length;
-
-    const largestPct = largest ? (largest.value / totals.totalValue) * 100 : 0;
-
-    const cashRatio = (totals.cash / totals.totalValue) * 100;
-
+    const largestPct =
+        largest && totalValue > 0 ? (largest.value / totalValue) * 100 : 0;
+    const cashRatio = totalValue > 0 ? (cashValue / totalValue) * 100 : 0;
     const winRate = enriched.length ? (inProfit / enriched.length) * 100 : 0;
+
+    const performanceIndex = buildPerformanceIndex(
+        withLiveSample(snapshotSamples, {
+            holdingsValue,
+            investedValue,
+            cashValue,
+        }),
+        transactionTimes,
+    );
 
     return (
         <AppShell>
@@ -137,7 +151,7 @@ export default function AnalyticsPage() {
                     value={`${diversification} / 4`}
                 />
 
-                <Stat label='Total return' value={fmtPct(totals.totalPLPct)} />
+                <Stat label='Total return' value={fmtPct(totalPLPct)} />
             </div>
 
             <div className='mb-8 mt-px grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-border bg-border md:grid-cols-4'>
@@ -150,7 +164,7 @@ export default function AnalyticsPage() {
                 <Stat
                     label='Cash ratio'
                     value={`${cashRatio.toFixed(1)}%`}
-                    sub={`${fmtEUR(totals.cash)} available`}
+                    sub={`${fmtCurrency(cashValue, currency)} available`}
                 />
 
                 <Stat
@@ -163,12 +177,16 @@ export default function AnalyticsPage() {
             </div>
 
             <div className='mb-8'>
-                <BenchmarkChart seed={5} />
+                <BenchmarkChart
+                    portfolioIndex={performanceIndex}
+                    benchmark={benchmark}
+                    benchmarkLabel={BENCHMARK.label}
+                />
             </div>
 
             <div className='mb-8 grid gap-6 md:gap-8 lg:grid-cols-2'>
                 <CategoryPerformanceChart enriched={enriched} />
-                <MonthlyReturnsChart />
+                <MonthlyReturnsChart data={monthlyReturns(performanceIndex)} />
             </div>
 
             <HoldingsRanked enriched={enriched} />

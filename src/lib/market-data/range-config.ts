@@ -1,6 +1,6 @@
 import type { Range } from './range';
 
-type YahooInterval =
+export type YahooInterval =
     | '1m'
     | '2m'
     | '5m'
@@ -34,6 +34,18 @@ export const RANGE_TO_YAHOO: Record<
     '3M': { period1: () => daysAgo(90), interval: '1d' },
     '1Y': { period1: () => daysAgo(365), interval: '1wk' },
     All: { period1: () => daysAgo(365 * 5), interval: '1mo' },
+};
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Długość okna wykresu wstecz od "teraz"; null = cała historia. */
+export const RANGE_WINDOW_MS: Record<Range, number | null> = {
+    '1D': DAY_MS,
+    '1W': 7 * DAY_MS,
+    '1M': 30 * DAY_MS,
+    '3M': 90 * DAY_MS,
+    '1Y': 365 * DAY_MS,
+    All: null,
 };
 
 export const RANGE_REVALIDATE_SECONDS: Record<Range, number> = {

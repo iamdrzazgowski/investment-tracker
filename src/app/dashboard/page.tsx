@@ -9,6 +9,7 @@ import { StatRow } from '@/features/portfolio/components/stat-row';
 import { TopMovers } from '@/features/portfolio/components/top-movers';
 import { fmtCurrency, fmtSignedCurrency } from '@/lib/format';
 import { requirePortfolio } from '@/lib/auth-helpers';
+import { toCategory } from '@/lib/asset-category';
 import { valuePortfolio } from '@/lib/portfolio-valuation';
 import { getHoldingsByPortfolio } from '@/lib/repositories/holding.repository';
 import { getSnapshotPoints } from '@/lib/repositories/portfolio-snapshot.repository';
@@ -20,11 +21,6 @@ import type { TopMoverItem } from '@/features/portfolio/components/top-movers';
 import type { AllocationSlice } from '@/features/portfolio/components/allocation-donut';
 import type { PerformancePoint } from '@/features/portfolio/components/performance-chart';
 
-function toCategory(category: string): Category {
-    if (category === 'ETF') return 'ETFs';
-    if (category === 'CRYPTO') return 'Crypto';
-    return 'Stocks';
-}
 
 // Wykres kończy się bieżącą wyceną, więc ma punkt "teraz" także zanim
 // cron zdąży zapisać pierwszy snapshot.

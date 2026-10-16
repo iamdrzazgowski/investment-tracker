@@ -60,6 +60,35 @@ export async function snapshotAllPortfolios(): Promise<
     return results;
 }
 
+export interface PortfolioSnapshotSample {
+    /** Unix ms */
+    t: number;
+    holdingsValue: number;
+    investedValue: number;
+    cashValue: number;
+}
+
+export async function getSnapshotSamples(
+    portfolioId: string,
+): Promise<PortfolioSnapshotSample[]> {
+    const snapshots = await prisma.portfolioSnapshot.findMany({
+        where: { portfolioId },
+        orderBy: { capturedAt: 'asc' },
+        select: {
+            capturedAt: true,
+            totalValue: true,
+            investedValue: true,
+            cashValue: true,
+        },
+    });
+    return snapshots.map((s) => ({
+        t: s.capturedAt.getTime(),
+        holdingsValue: s.totalValue.toNumber() - s.cashValue.toNumber(),
+        investedValue: s.investedValue.toNumber(),
+        cashValue: s.cashValue.toNumber(),
+    }));
+}
+
 export interface PortfolioSnapshotPoint {
     /** Unix ms */
     t: number;

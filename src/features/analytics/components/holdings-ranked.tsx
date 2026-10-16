@@ -4,12 +4,12 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AvatarBadge } from '@/components/shared/avatar-badge';
 import { Delta } from '@/components/shared/delta';
-import type { EnrichedHolding } from '@/lib/data';
+import type { AnalyticsHolding } from '@/features/analytics/types';
 
 export function HoldingsRanked({
     enriched,
 }: {
-    enriched: EnrichedHolding[];
+    enriched: AnalyticsHolding[];
 }) {
     const router = useRouter();
     const sorted = enriched.toSorted((a, b) => b.plPct - a.plPct);
@@ -25,6 +25,11 @@ export function HoldingsRanked({
             </CardHeader>
             <CardContent className='pt-0'>
                 <ul className='divide-y divide-border'>
+                    {sorted.length === 0 && (
+                        <li className='py-2 text-[13px] text-muted-foreground'>
+                            No open positions yet
+                        </li>
+                    )}
                     {sorted.map((h) => (
                         <li
                             key={h.t}

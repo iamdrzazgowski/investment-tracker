@@ -1,6 +1,6 @@
 import 'server-only';
 import YahooFinance from 'yahoo-finance2';
-import { RANGE_TO_YAHOO } from './range-config';
+import { RANGE_TO_YAHOO, type YahooInterval } from './range-config';
 import type { Range } from './range';
 
 export const yahooFinance = new YahooFinance({
@@ -161,6 +161,22 @@ export async function fetchYahooQuote(symbol: string): Promise<YahooQuote> {
                 ? rec.regularMarketChangePercent
                 : 0,
     };
+}
+
+export async function fetchYahooHistorySince(
+    symbol: string,
+    period1: Date,
+    interval: YahooInterval,
+) {
+    const result = await yahooFinance.chart(symbol, {
+        period1,
+        period2: new Date(),
+        interval,
+    });
+
+    return result.quotes
+        .filter((q) => q.close != null)
+        .map((q) => ({ date: q.date, price: q.close as number }));
 }
 
 export async function fetchYahooHistory(symbol: string, range: Range) {

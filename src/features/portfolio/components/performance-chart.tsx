@@ -14,6 +14,8 @@ import { Delta } from '@/components/shared/delta';
 import { fmtCurrency } from '@/lib/format';
 import { RangeTabs } from '@/components/shared/range-tabs';
 import type { Range } from '@/lib/market-data/range';
+import { RANGE_WINDOW_MS } from '@/lib/market-data/range-config';
+import { downsample } from '@/lib/analytics/downsample';
 
 export interface PerformancePoint {
     /** Unix ms */
@@ -22,25 +24,9 @@ export interface PerformancePoint {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const RANGE_WINDOW_MS: Record<Range, number | null> = {
-    '1D': DAY_MS,
-    '1W': 7 * DAY_MS,
-    '1M': 30 * DAY_MS,
-    '3M': 90 * DAY_MS,
-    '1Y': 365 * DAY_MS,
-    All: null,
-};
-const DEFAULT_FLAT_SPAN_MS = 30 * DAY_MS;
-const MAX_POINTS = 300;
 
-function downsample(points: PerformancePoint[]): PerformancePoint[] {
-    if (points.length <= MAX_POINTS) return points;
-    const step = Math.ceil(points.length / MAX_POINTS);
-    const sampled = points.filter((_, i) => i % step === 0);
-    const last = points[points.length - 1];
-    if (sampled[sampled.length - 1] !== last) sampled.push(last);
-    return sampled;
-}
+const DEFAULT_FLAT_SPAN_MS = 30 * DAY_MS;
+
 
 const dateFormatter = new Intl.DateTimeFormat('en-GB', {
     day: '2-digit',

@@ -21,7 +21,16 @@ export interface ValuationPortfolio {
     holdings: ValuationHolding[];
 }
 
+export interface ValuedPosition {
+    /** Wartość rynkowa pozycji w walucie bazowej. */
+    value: number;
+    /** Koszt zakupu pozycji w walucie bazowej. */
+    invested: number;
+}
+
 export interface PortfolioValuation {
+    /** Równolegle do `portfolio.holdings`. */
+    positions: ValuedPosition[];
     cashValue: number;
     holdingsValue: number;
     investedValue: number;
@@ -67,6 +76,7 @@ export async function valuePortfolio(
     let holdingsValue = 0;
     let investedValue = 0;
     let dayChangeValue = 0;
+    const positions: ValuedPosition[] = [];
 
     for (const holding of portfolio.holdings) {
         const { asset } = holding;
@@ -75,8 +85,11 @@ export async function valuePortfolio(
         const avgCost = holding.avgCost.toNumber();
         const price = asset.lastPrice?.toNumber() ?? avgCost;
 
-        holdingsValue += shares * price * rate;
-        investedValue += shares * avgCost * rate;
+        const value = shares * price * rate;
+        const invested = shares * avgCost * rate;
+        positions.push({ value, invested });
+        holdingsValue += value;
+        investedValue += invested;
 
         const dayPct = asset.dayChangePercent?.toNumber() ?? 0;
         if (asset.lastPrice != null && 1 + dayPct / 100 > 0) {
@@ -86,6 +99,7 @@ export async function valuePortfolio(
     }
 
     return {
+        positions,
         cashValue,
         holdingsValue,
         investedValue,

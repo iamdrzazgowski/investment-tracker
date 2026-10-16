@@ -12,12 +12,12 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartTooltipValue } from '@/components/shared/chart-tooltip';
-import type { EnrichedHolding } from '@/lib/data';
+import type { AnalyticsHolding } from '@/features/analytics/types';
 
 export function CategoryPerformanceChart({
     enriched,
 }: {
-    enriched: EnrichedHolding[];
+    enriched: AnalyticsHolding[];
 }) {
     const totalsByCategory = new Map<string, { invested: number; pl: number }>();
     for (const h of enriched) {
