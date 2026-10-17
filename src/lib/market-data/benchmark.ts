@@ -9,10 +9,13 @@ import {
 import { RANGES, type Range } from './range';
 
 /**
- * MSCI World — notowany jako iShares MSCI World ETF (USD). Do porównań
- * liczy się tylko zmiana procentowa, więc waluta nie ma znaczenia.
+ * iShares MSCI ACWI ETF (ticker ACWI, USD). Do porównań liczy się tylko
+ * zmiana procentowa, więc waluta nie ma znaczenia.
  */
-export const BENCHMARK = { symbol: 'URTH', label: 'MSCI World' } as const;
+export const BENCHMARK = {
+    symbol: 'ACWI',
+    label: 'iShares MSCI ACWI',
+} as const;
 
 export interface BenchmarkPoint {
     /** Unix ms */
