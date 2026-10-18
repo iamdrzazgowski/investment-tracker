@@ -43,15 +43,23 @@ export default async function AssetDetailPage({
         portfolioPromise,
         historyPromise,
     ]);
-    const holding = await getHoldingForAsset(portfolio.id, asset.id);
-    const watched = await isOnWatchlist(portfolio.id, asset.id);
+
     // FX rate: 1 unit of asset currency -> portfolio (cash) currency.
     // Null when unavailable (offline / unknown pair) — panel falls back
     // to the no-conversion warning.
-    const fxRate =
+    // Cheap sync guard first: identical currencies never need the remote rate.
+    const fxRatePromise =
         asset.currency === portfolio.baseCurrency
-            ? 1
-            : await getFxRate(asset.currency, portfolio.baseCurrency);
+            ? Promise.resolve(1)
+            : getFxRate(asset.currency, portfolio.baseCurrency);
+
+    // Holding, watchlist state and FX are independent of one another —
+    // fetch them concurrently instead of one round trip at a time.
+    const [holding, watched, fxRate] = await Promise.all([
+        getHoldingForAsset(portfolio.id, asset.id),
+        isOnWatchlist(portfolio.id, asset.id),
+        fxRatePromise,
+    ]);
     const initialData = initialPoints.map((p, i) => ({
         i,
         v: p.price,

@@ -61,20 +61,30 @@ function withLiveSample(
 
 export default async function AnalyticsPage() {
     const portfolio = await requirePortfolio();
-    const snapshotSamples = await getSnapshotSamples(portfolio.id);
-    const historyStart = snapshotSamples[0]?.t ?? null;
 
-    const [dbHoldings, transactionTimes, benchmark] =
-        await Promise.all([
-            getHoldingsByPortfolio(portfolio.id),
-            getTransactionTimes(portfolio.id),
-            getBenchmarkHistory(historyStart),
-        ]);
+    // Dependency-based parallelization: every fetch starts at the earliest
+    // possible moment — the two dependent chains (benchmark ← snapshots,
+    // valuation ← holdings) kick off the instant their input resolves,
+    // instead of waiting for the sibling fetches to finish.
+    const snapshotPromise = getSnapshotSamples(portfolio.id);
+    const holdingsPromise = getHoldingsByPortfolio(portfolio.id);
+    const transactionTimesPromise = getTransactionTimes(portfolio.id);
 
-    const valuation = await valuePortfolio(
-        { ...portfolio, holdings: dbHoldings },
-        { strictFx: false },
+    const benchmarkPromise = snapshotPromise.then((samples) =>
+        getBenchmarkHistory(samples[0]?.t ?? null),
     );
+    const valuationPromise = holdingsPromise.then((holdings) =>
+        valuePortfolio({ ...portfolio, holdings }, { strictFx: false }),
+    );
+
+    const [dbHoldings, transactionTimes, benchmark, valuation] =
+        await Promise.all([
+            holdingsPromise,
+            transactionTimesPromise,
+            benchmarkPromise,
+            valuationPromise,
+        ]);
+    const snapshotSamples = await snapshotPromise;
     const currency = portfolio.baseCurrency;
 
     const enriched: AnalyticsHolding[] = dbHoldings.map((h, i) => {
