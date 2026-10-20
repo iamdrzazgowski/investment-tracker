@@ -24,6 +24,7 @@ export function BuySellPanel({
     cash,
     cashCurrency,
     fxRate,
+    fractional = false,
 }: {
     ticker: string;
     marketPrice: number;
@@ -34,6 +35,8 @@ export function BuySellPanel({
     cashCurrency: string;
     /** 1 unit of asset `currency` -> `cashCurrency`. Null when unavailable. */
     fxRate: number | null;
+    /** Crypto can be traded in fractions (0.0042 BTC). */
+    fractional?: boolean;
 }) {
     const [priceMode, setPriceMode] = useState<'market' | 'custom'>('market');
     const [customPrice, setCustomPrice] = useState(marketPrice.toFixed(2));
@@ -96,7 +99,7 @@ export function BuySellPanel({
                         id='qty'
                         type='number'
                         min='0'
-                        step='1'
+                        step={fractional ? 'any' : '1'}
                         placeholder='0'
                         className={inputClass}
                         value={qty}
@@ -186,7 +189,8 @@ export function BuySellPanel({
                 </div>
 
                 <p className='text-[12px] leading-relaxed text-muted-foreground'>
-                    {owned && `You own ${fmtNum(ownedShares, 0)} ${ticker}. `}
+                    {owned &&
+                                            `You own ${fmtNum(ownedShares, fractional ? 6 : 0)} ${ticker}. `}
                     Cash available: {fmtCurrency(cash, cashCurrency)}
                     {needsFx &&
                         cashInAsset != null &&

@@ -178,7 +178,7 @@ export function AssetSearchField({
                     autoComplete='off'
                     autoCorrect='off'
                     spellCheck={false}
-                    placeholder='Search ticker or company'
+                    placeholder='Search ticker, company or crypto'
                     autoFocus
                     className='h-14 border-0 bg-transparent px-0 text-base shadow-none placeholder:text-muted-foreground/70 focus-visible:border-0 focus-visible:ring-0 md:text-[15px] dark:bg-transparent'
                 />

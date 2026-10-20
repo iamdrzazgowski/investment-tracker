@@ -126,6 +126,13 @@ export async function fetchYahooQuote(symbol: string): Promise<YahooQuote> {
     }
     const rec = q as Record<string, unknown>;
 
+    // Krypto wyceniamy przez CoinGecko (Asset.category = CRYPTO), nie przez Yahoo.
+    if (rec.quoteType === 'CRYPTOCURRENCY') {
+        throw new Error(
+            `"${clean}" is a cryptocurrency and CoinGecko could not resolve it (rate limited or unknown coin)`,
+        );
+    }
+
     const name =
         (typeof rec.shortName === 'string' && rec.shortName.trim()
             ? rec.shortName.trim()

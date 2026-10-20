@@ -87,7 +87,7 @@ export function GlobalSearchProvider({
 
                     {open && (
                         <AssetSearchField
-                            emptyMessage='Start typing to search stocks and ETFs.'
+                            emptyMessage='Start typing to search stocks, ETFs and crypto.'
                             enterLabel='Open'
                             actionIcon={
                                 <ArrowUpRight

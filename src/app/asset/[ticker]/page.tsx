@@ -71,7 +71,13 @@ export default async function AssetDetailPage({
     const dayChange = asset.dayChangePercent
         ? Number(asset.dayChangePercent)
         : 0;
-    const cat = asset.category === 'ETF' ? 'ETFs' : 'Stocks';
+    const cat =
+        asset.category === 'ETF'
+            ? 'ETFs'
+            : asset.category === 'CRYPTO'
+              ? 'Crypto'
+              : 'Stocks';
+    const isCrypto = asset.category === 'CRYPTO';
     const holdingShares = holding ? holding.shares.toNumber() : 0;
     const holdingAvgCost = holding ? holding.avgCost.toNumber() : 0;
     const holdingInvested = holdingShares * holdingAvgCost;
@@ -139,7 +145,7 @@ export default async function AssetDetailPage({
                                         Shares
                                     </span>
                                     <span className='font-mono'>
-                                        {fmtNum(holdingShares, 0)}
+                                        {fmtNum(holdingShares, isCrypto ? 6 : 0)}
                                     </span>
                                 </li>
                                 <li className='flex items-center justify-between py-2.5'>
@@ -232,6 +238,7 @@ export default async function AssetDetailPage({
                     cash={portfolio.cashBalance.toNumber()}
                     cashCurrency={portfolio.baseCurrency}
                     fxRate={fxRate}
+                    fractional={isCrypto}
                 />
             </div>
         </AppShell>

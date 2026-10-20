@@ -16,7 +16,7 @@ export const addFundsSchema = z.object({
 export type AddFundsInput = z.infer<typeof addFundsSchema>;
 
 export const tradeSchema = z.object({
-    ticker: z.string().trim().min(1, 'Ticker is required').max(20),
+    ticker: z.string().trim().min(1, 'Ticker is required').max(64),
     quantity: z
         .number({ error: 'Quantity must be a number' })
         .positive('Quantity must be greater than 0')

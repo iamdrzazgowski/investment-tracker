@@ -40,6 +40,9 @@ export async function addFundsAction(balance: number): Promise<AddFundsState> {
     try {
         await addFundsToPortfolio(portfolioId, result.data.balance);
 
+        revalidatePath('/');
+        revalidatePath('/portfolio');
+
         return {
             success: true,
         };
