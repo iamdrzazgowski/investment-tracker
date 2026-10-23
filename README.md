@@ -9,6 +9,7 @@ Built with Next.js 16 (App Router), React 19, Prisma 7 and PostgreSQL. Market da
 ## Table of contents
 
 - [Features](#features)
+- [Screenshots](#screenshots)
 - [Tech stack](#tech-stack)
 - [Architecture](#architecture)
 - [Getting started](#getting-started)
@@ -39,6 +40,34 @@ Built with Next.js 16 (App Router), React 19, Prisma 7 and PostgreSQL. Market da
   - Monthly returns, category performance and ranked holdings.
 - **Authentication.** Email and password via Better Auth. A portfolio is created automatically on sign-up.
 - **Responsive UI.** Sidebar on desktop, tab bar on mobile. Design follows the Nordwell design system: Swiss/editorial, minimal, fintech.
+
+## Screenshots
+
+### Dashboard
+
+![Dashboard](docs/screenshots/dashboard.png)
+
+### Portfolio
+
+![Portfolio](docs/screenshots/portfolio.png)
+
+### Asset page
+
+![Asset page](docs/screenshots/asset.png)
+
+### Analytics
+
+![Analytics](docs/screenshots/analytics.png)
+
+### Transactions
+
+![Transactions](docs/screenshots/transactions.png)
+
+### Landing page and login
+
+![Landing page](docs/screenshots/landing.png)
+
+![Login](docs/screenshots/login.png)
 
 ## Tech stack
 
